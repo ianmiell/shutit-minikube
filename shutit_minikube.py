@@ -68,7 +68,7 @@ then
 fi
 if [[ $(command -v virsh) ]] && [[ $(kvm-ok 2>&1 | command grep 'can be used') != '' ]]
 then
-	virsh list | grep ${MODULE_NAME} | awk '{print $1}' | xargs -n1 virsh destroy
+	virsh list | grep ${MODULE_NAME} | awk '{print $1}' | xargs -n1 --no-run-if-empty virsh destroy || true
 fi
 ''')
 		return False
