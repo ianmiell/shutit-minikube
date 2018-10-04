@@ -17,16 +17,17 @@ class shutit_minikube(ShutItModule):
 		# Linux
 		shutit.send('curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl')
 		shutit.send('chmod +x kubectl')
-		shutit.send('cp kubectl /usr/local/bin/kubectl')
 		# Windows
 		#curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/windows/amd64/kubectl.exe
-		shutit.send('curl https://storage.googleapis.com/minikube/releases/v0.16.0/minikube-linux-amd64 > minikube')
+		shutit.send('curl https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 > minikube')
 		shutit.send('chmod +x minikube')
+		shutit.send('./minikube delete || true')
 		shutit.send('./minikube start')
-		shutit.send('kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')
-		shutit.send('kubectl expose deployment hello-minikube --type=NodePort')
-		shutit.send('kubectl get pod')
-		shutit.send('curl $(minikube service hello-minikube --url)')
+		shutit.send('./kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')
+		shutit.send('./kubectl expose deployment hello-minikube --type=NodePort')
+		shutit.send('./kubectl get pod')
+		shutit.send('curl $(./minikube service hello-minikube --url)')
+		shutit.send('export PATH=.:${PATH}')
 		shutit.pause_point('')
 		return True
 
