@@ -4,6 +4,7 @@ import string
 import os
 import inspect
 from shutit_module import ShutItModule
+from minikube_library import kubewatch
 
 class shutit_minikube(ShutItModule):
 
