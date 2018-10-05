@@ -17,6 +17,6 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 END''')
 	s.send('kubectl create -f ian-rbac.yaml')
-	s.send('kubectl create -f <(curl -L https://github.com/skippbox/kubewatch/releases/download/v0.0.3/kubewatch.yaml)')
+	s.send('kubectl create -f <(curl -L https://github.com/ianmiell/kubewatch/releases/download/v0.0.3/kubewatch.yaml)')
 	s.send('kubectl get pods')
 	s.pause_point('')
