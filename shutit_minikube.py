@@ -5,6 +5,7 @@ import os
 import inspect
 from shutit_module import ShutItModule
 from minikube_library import kubewatch
+from minikube_library import istio
 
 class shutit_minikube(ShutItModule):
 
@@ -23,12 +24,14 @@ class shutit_minikube(ShutItModule):
 		shutit.send('curl https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 > minikube')
 		shutit.send('chmod +x minikube')
 		shutit.send('./minikube delete || true')
-		shutit.send('./minikube start')
+		# https://istio.io/docs/setup/kubernetes/platform-setup/minikube/
+		shutit.send('./minikube start --memory=8192 --cpus=4 --kubernetes-version=v1.10.0 --extra-config=controller-manager.cluster-signing-cert-file="/var/lib/localkube/certs/ca.crt" --extra-config=controller-manager.cluster-signing-key-file="/var/lib/localkube/certs/ca.key"')
 		shutit.send('./kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')
 		shutit.send('./kubectl expose deployment hello-minikube --type=NodePort')
 		shutit.send('./kubectl get pod')
-		shutit.send('curl $(./minikube service hello-minikube --url)')
 		shutit.send('export PATH=.:${PATH}')
+		shutit.send('curl $(./minikube service hello-minikube --url)')
+		istio.do_istio(shutit)
 		shutit.pause_point('')
 		return True
 
