@@ -26,8 +26,7 @@ class shutit_minikube(ShutItModule):
 		shutit.send('./minikube delete || true')
 		if shutit.cfg[self.module_id]['do_istio']:
 			shutit.send('./minikube start --memory=4096 --disk-size=30g --kubernetes-version=v1.10.0')
-			shutit.send('export PATH=.:${PATH}')
-			shutit.pause_point('kubectl get nodes')
+			shutit.send('export PATH=$(pwd):${PATH}')
 			istio.do_istio(shutit)
 		else:
 			shutit.send('./minikube start')
