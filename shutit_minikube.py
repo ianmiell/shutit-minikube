@@ -24,10 +24,11 @@ class shutit_minikube(ShutItModule):
 		shutit.send('curl https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 > minikube')
 		shutit.send('chmod +x minikube')
 		shutit.send('./minikube delete || true')
+		shutit.send('./minikube config set WantKubectlDownloadMsg false')
 		if shutit.cfg[self.module_id]['do_istio']:
-			shutit.send('./minikube start --memory=4096 --disk-size=30g --kubernetes-version=v1.10.0')
+			shutit.send('./minikube start --memory=4096 --disk-size=30g --kubernetes-version=' + shutit.cfg[self.module_id]['kubernetes_version'])
 			shutit.send('export PATH=$(pwd):${PATH}')
-			istio.do_istio(shutit)
+			istio.do_istio(shutit, shutit.cfg[self.module_id]['istio_version'])
 		else:
 			shutit.send('./minikube start')
 			shutit.send('./kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')
@@ -43,6 +44,8 @@ class shutit_minikube(ShutItModule):
 
 	def get_config(self, shutit):
 		shutit.get_config(self.module_id,'do_istio',boolean=True,default=False)
+		shutit.get_config(self.module_id,'istio_version',default='1.0.3')
+		shutit.get_config(self.module_id,'kubernetes_version',default='v1.10.0')
 		return True
 
 def module():
