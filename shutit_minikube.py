@@ -24,64 +24,26 @@ class shutit_minikube(ShutItModule):
 		shutit.send('curl https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 > minikube')
 		shutit.send('chmod +x minikube')
 		shutit.send('./minikube delete || true')
-		# https://istio.io/docs/setup/kubernetes/platform-setup/minikube/
-		shutit.send('./minikube start --memory=8192 --cpus=4 --kubernetes-version=v1.10.0 --extra-config=controller-manager.cluster-signing-cert-file="/var/lib/localkube/certs/ca.crt" --extra-config=controller-manager.cluster-signing-key-file="/var/lib/localkube/certs/ca.key"')
-		shutit.send('./kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')
-		shutit.send('./kubectl expose deployment hello-minikube --type=NodePort')
-		shutit.send('./kubectl get pod')
-		shutit.send('export PATH=.:${PATH}')
-		shutit.send('curl $(./minikube service hello-minikube --url)')
-		istio.do_istio(shutit)
-		shutit.pause_point('')
+		if shutit.cfg[self.module_id]['do_istio']:
+			shutit.send('./minikube start --memory=4096 --disk-size=30g --kubernetes-version=1.10.0')
+			shutit.send('export PATH=.:${PATH}')
+			shutit.pause_point('kubectl get nodes')
+			istio.do_istio(shutit)
+		else:
+			shutit.send('./minikube start')
+			shutit.send('./kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')
+			shutit.send('./kubectl expose deployment hello-minikube --type=NodePort')
+			shutit.send('./kubectl get pod')
+			shutit.send('curl $(./minikube service hello-minikube --url)')
+			shutit.send('export PATH=.:${PATH}')
+			shutit.send('curl $(./minikube service hello-minikube --url)')
+
+		shutit.pause_point('done')
 		return True
 
 
 	def get_config(self, shutit):
-		shutit.get_config(self.module_id,'vagrant_image',default='ubuntu/xenial64')
-		shutit.get_config(self.module_id,'vagrant_provider',default='virtualbox')
-		shutit.get_config(self.module_id,'gui',default='false')
-		shutit.get_config(self.module_id,'memory',default='1024')
-		shutit.get_config(self.module_id,'vagrant_run_dir',default='/tmp')
-		shutit.get_config(self.module_id,'this_vagrant_run_dir',default='/tmp')
-		return True
-
-	def test(self, shutit):
-		return True
-
-	def finalize(self, shutit):
-		return True
-
-	def is_installed(self, shutit):
-		# Destroy pre-existing, leftover vagrant images.
-		shutit.run_script('''#!/bin/bash
-MODULE_NAME=shutit_minikube
-rm -rf $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/vagrant_run/*
-if [[ $(command -v VBoxManage) != '' ]]
-then
-	while true
-	do
-		VBoxManage list runningvms | grep ${MODULE_NAME} | awk '{print $1}' | xargs -IXXX VBoxManage controlvm 'XXX' poweroff && VBoxManage list vms | grep shutit_minikube | awk '{print $1}'  | xargs -IXXX VBoxManage unregistervm 'XXX' --delete
-		# The xargs removes whitespace
-		if [[ $(VBoxManage list vms | grep ${MODULE_NAME} | wc -l | xargs) -eq '0' ]]
-		then
-			break
-		else
-			ps -ef | grep virtualbox | grep ${MODULE_NAME} | awk '{print $2}' | xargs kill
-			sleep 10
-		fi
-	done
-fi
-if [[ $(command -v virsh) ]] && [[ $(kvm-ok 2>&1 | command grep 'can be used') != '' ]]
-then
-	virsh list | grep ${MODULE_NAME} | awk '{print $1}' | xargs -n1 --no-run-if-empty virsh destroy || true
-fi
-''')
-		return False
-
-	def start(self, shutit):
-		return True
-
-	def stop(self, shutit):
+		shutit.get_config(self.module_id,'do_istio',boolean=True,default=False)
 		return True
 
 def module():
