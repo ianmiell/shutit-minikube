@@ -5,7 +5,6 @@ def do_istio(s, version):
 	s.send('mkdir -p istiotmp')
 	s.send('cd istiotmp')
 	OS = s.send_and_get_output('uname')
-	s.send('cd')
 	s.send('git clone https://github.com/istioinaction/book-source-code')
 	if OS == 'Linux':
 		s.send('wget -qO- https://github.com/istio/istio/releases/download/' + version + '/istio-' + version + '-linux.tar.gz | tar -zxvf -')
