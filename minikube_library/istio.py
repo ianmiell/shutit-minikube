@@ -18,6 +18,6 @@ def do_istio(s, version):
 	s.send("kubectl run -i --rm --restart=Never dummy --image=tutum/curl:alpine -n istio-system --command -- curl -v 'http://istio-pilot.istio-system:8080/v1/registration'")
 	s.send('kubectl create namespace istioinaction')
 	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istioinaction')
-	s.send('cd /root/book-source-code')
+	s.send('cd ../book-source-code')
 	s.send('istioctl kube-inject -f install/catalog-service/catalog-deployment.yaml')
 	s.pause_point('p55 istioctl kube-inject?')
