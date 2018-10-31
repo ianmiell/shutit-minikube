@@ -23,10 +23,10 @@ def do_istio(s, version):
 	# Deploy catalog app
 	s.send('kubectl create -f <(istioctl kube-inject -f install/catalog-service/catalog-all.yaml)')
 	s.send_until('kubectl get pod -n istio-system | grep catalog | grep -v ^NAME | grep -v Running | grep -v Completed | wc -l','0')
-	s.send("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl --command -- sh -c 'curl -s catalog:8080/api/catalog'")
+	s.send("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl -n istio-system --command -- sh -c 'curl -s catalog:8080/api/catalog'")
 	# Deploy API gateway service
 	s.send('kubectl create -f <(istioctl kube-inject -f install/catalog-service/apigateway-all.yaml)')
 	s.send_until('kubectl get pod -n istio-system | grep apigateway | grep -v ^NAME | grep -v Running | grep -v Completed | wc -l','0')
-	s.send("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl --command -- sh -c 'curl -s apigateway:8080/api/products'")
+	s.send("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl -n istio-system --command -- sh -c 'curl -s apigateway:8080/api/products'")
 	s.send('kubectl create -f chapter-files/chapter2/ingress-gateway.yaml')
 	s.pause_point('p57 istioctl kube-inject?')
