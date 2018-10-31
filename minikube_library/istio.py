@@ -35,9 +35,10 @@ def do_istioinaction(s):
 	s.send('sleep 60')
 	s.send("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl --command -- sh -c 'curl -s apigateway:8080/api/products'")
 	# Ingress gateway
+	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istio-system')
 	s.send('kubectl create -f chapter-files/chapter2/ingress-gateway.yaml')
 	s.send("""URL=$(minikube ip):$(kubectl get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')""")
-	s.send('curl $URL/api/products')
+	s.send('curl ${URL}/api/products')
 	# Debug
 	s.send("istioctl proxy-config routes $(kubectl get pod | grep ingress | cut -d ' ' -f 1)")
 	s.send("kubectl get gateway")
