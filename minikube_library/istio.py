@@ -62,7 +62,7 @@ def do_istioinaction(s):
 	# Generate traffic
 	for _ in []*10:
 		s.send('''curl $URL/api/products -H "failure-percentage: 50"''')
-	s.send('kubectl create -f <(istioctl kube-inject -f ./install/catalog-v2-service/catalog-v2-deployment.yaml)'
+	s.send('kubectl create -f <(istioctl kube-inject -f ./install/catalog-v2-service/catalog-v2-deployment.yaml')
 	s.send('kubectl create -f chapter-files/chapter2/catalog-destinationrule.yaml')
 	s.send('kubectl apply -f chapter-files/chapter2/catalog-virtualservice-all-v1.yaml')
 	# v1 responses only now
