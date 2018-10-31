@@ -19,6 +19,7 @@ def do_istio(s, version):
 	s.send("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl -n istio-system --command -- curl -v 'http://istio-pilot.istio-system:8080/v1/registration'")
 
 def do_istioinaction(s):
+	# Create istioinaction namespace
 	s.send('kubectl create namespace istioinaction')
 	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istioinaction')
 	s.send('cd ../book-source-code')
@@ -34,13 +35,15 @@ def do_istioinaction(s):
 	s.send_until('kubectl get pod | grep apigateway | grep -v ^NAME | grep -v Running | grep -v Completed | wc -l','0', cadence=20)
 	s.send('sleep 60')
 	s.send("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl --command -- sh -c 'curl -s apigateway:8080/api/products'")
-	# Ingress gateway - TODO: should this be in istio-system or istioinaction?
+
+	# Ingress gateway in istio-system
 	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istio-system')
 	s.send('kubectl create -f chapter-files/chapter2/ingress-gateway.yaml')
 	s.send("""URL=$(minikube ip):$(kubectl get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')""")
 	s.send('curl ${URL}/api/products')
 	# Debug
 	s.send("istioctl proxy-config routes $(kubectl get pod | grep ingress | cut -d ' ' -f 1)")
+
 	# Back to istioinaction
 	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istioinaction')
 	s.send('kubectl get gateway')
@@ -62,7 +65,7 @@ def do_istioinaction(s):
 	# Generate traffic
 	for _ in []*10:
 		s.send('''curl $URL/api/products -H "failure-percentage: 50"''')
-	s.send('kubectl create -f <(istioctl kube-inject -f ./install/catalog-v2-service/catalog-v2-deployment.yaml')
+	s.send('kubectl create -f <(istioctl kube-inject -f ./install/catalog-v2-service/catalog-v2-deployment.yaml)')
 	s.send('kubectl create -f chapter-files/chapter2/catalog-destinationrule.yaml')
 	s.send('kubectl apply -f chapter-files/chapter2/catalog-virtualservice-all-v1.yaml')
 	# v1 responses only now
