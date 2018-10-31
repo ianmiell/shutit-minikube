@@ -32,11 +32,11 @@ class shutit_minikube(ShutItModule):
 			elif OS == 'Darwin':
 				shutit.send('curl https://storage.googleapis.com/minikube/releases/latest/minikube-darwin-amd64 > minikube')
 			shutit.send('chmod +x minikube')
+		shutit.send('export PATH=$(pwd):${PATH}')
 		shutit.send('./minikube delete || true')
 		shutit.send('./minikube config set WantKubectlDownloadMsg false')
 		if shutit.cfg[self.module_id]['do_istio']:
 			shutit.send('./minikube start --memory=4096 --disk-size=30g --kubernetes-version=' + shutit.cfg[self.module_id]['kubernetes_version'])
-			shutit.send('export PATH=$(pwd):${PATH}')
 			istio.do_istio(shutit, shutit.cfg[self.module_id]['istio_version'])
 			istio.do_istioinaction(shutit)
 		if shutit.cfg[self.module_id]['do_knative']:
@@ -47,8 +47,6 @@ class shutit_minikube(ShutItModule):
 			shutit.send('./kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')
 			shutit.send('./kubectl expose deployment hello-minikube --type=NodePort')
 			shutit.send('./kubectl get pod')
-			shutit.send('curl $(./minikube service hello-minikube --url)')
-			shutit.send('export PATH=.:${PATH}')
 			shutit.send('curl $(./minikube service hello-minikube --url)')
 
 		shutit.pause_point('done')
