@@ -25,14 +25,13 @@ def do_istio(s, version):
 	s.send_until('kubectl get pod -n istio-system | grep catalog | wc -l','1')
 	s.send('sleep 120')
 	s.send_until('kubectl get pod -n istio-system | grep catalog | grep -v ^NAME | grep -v Running | grep -v Completed | wc -l','0')
-	s.pause_point("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl --command -- sh -c 'curl -s catalog:8080/api/catalog'")
+	s.multisend("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl --command -- sh -c 'curl -s catalog:8080/api/catalog'",{"If you don't see a command prompt, try pressing enter.":''})
 	# Deploy API gateway service
 	s.send('kubectl create -f <(istioctl kube-inject -f install/apigateway-service/apigateway-all.yaml)')
 	s.send_until('kubectl get pod -n istio-system | grep apigateway | wc -l','1')
 	s.send_until('kubectl get pod -n istio-system | grep apigateway | grep -v ^NAME | grep -v Running | grep -v Completed | wc -l','0')
 	s.send('sleep 120')
-	s.pause_point("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl --command -- sh -c 'curl -s apigateway:8080/api/products'")
-
+	s.multisend("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl --command -- sh -c 'curl -s apigateway:8080/api/products'",{"If you don't see a command prompt, try pressing enter.":''})
 	# Ingress gateway
 	s.send('kubectl create -f chapter-files/chapter2/ingress-gateway.yaml')
 	s.send("URL=$(minikube ip):$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')")
