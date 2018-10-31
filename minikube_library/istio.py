@@ -41,6 +41,13 @@ def do_istioinaction(s):
 	s.send('curl ${URL}/api/products')
 	# Debug
 	s.send("istioctl proxy-config routes $(kubectl get pod | grep ingress | cut -d ' ' -f 1)")
-	s.send("kubectl get gateway")
-	s.send("kubectl get virtualservice")
-	s.pause_point('p57?')
+	# Back to istioinaction
+	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istioinaction')
+	s.send('kubectl get gateway')
+	s.send('kubectl get virtualservice')
+	# Grafana
+	s.send('''GRAFANA=$(kubectl -n istio-system get pod | grep -i running | grep grafana | cut -d ' ' -f 1)''')
+	s.send('''kubectl port-forward -n istio-system $GRAFANA 8080:3000 &''')
+	s.pause_point('now go to localhost:8080')
+	s.send('kill %1')
+	s.pause_point('p58')
