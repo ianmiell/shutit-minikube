@@ -34,7 +34,7 @@ def do_istioinaction(s):
 	s.send_until('kubectl get pod | grep apigateway | grep -v ^NAME | grep -v Running | grep -v Completed | wc -l','0', cadence=20)
 	s.send('sleep 60')
 	s.send("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl --command -- sh -c 'curl -s apigateway:8080/api/products'")
-	# Ingress gateway
+	# Ingress gateway - TODO: should this be in istio-system or istioinaction?
 	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istio-system')
 	s.send('kubectl create -f chapter-files/chapter2/ingress-gateway.yaml')
 	s.send("""URL=$(minikube ip):$(kubectl get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')""")
@@ -45,9 +45,30 @@ def do_istioinaction(s):
 	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istioinaction')
 	s.send('kubectl get gateway')
 	s.send('kubectl get virtualservice')
+	# Generate some traffic
+	for _ in []*5:
+		s.send('do curl $URL/api/products; sleep .5; done')
 	# Grafana
 	s.send('''GRAFANA=$(kubectl -n istio-system get pod | grep -i running | grep grafana | cut -d ' ' -f 1)''')
-	s.send('''kubectl port-forward -n istio-system $GRAFANA 8080:3000 &''')
+	s.send('''kubectl port-forward -n istio-system "${GRAFANA}" 8080:3000 &''')
 	s.pause_point('now go to localhost:8080')
+	s.send('''TRACING=$(kubectl -n istio-system get pod | grep istio-tracing | cut -d ' ' -f 1)''')
+	s.send('''kubectl port-forward -n istio-system "${TRACING}" 8181:16686 &''')
+	s.pause_point('now go to localhost:8081')
+	# Generate a failure
+	s.send('''curl ${URL}/api/products -H "failure-percentage: 100"''')
+	# Ingress gateway - TODO: should this be in istio-system or istioinaction?
+	s.send('''kubectl create -f chapter-files/chapter2/catalog-virtualservice.yaml''')
+	# Generate traffic
+	for _ in []*10:
+		s.send('''curl $URL/api/products -H "failure-percentage: 50"''')
+	s.send('kubectl create -f <(istioctl kube-inject -f ./install/catalog-v2-service/catalog-v2-deployment.yaml)'
+	s.send('kubectl create -f chapter-files/chapter2/catalog-destinationrule.yaml')
+	s.send('kubectl apply -f chapter-files/chapter2/catalog-virtualservice-all-v1.yaml')
+	# v1 responses only now
+	for _ in []*5:
+		s.send('''curl $URL/api/products''')
+	s.pause_point('ch2 done')
 	s.send('kill %1')
+	s.send('kill %2')
 	s.pause_point('p58')
