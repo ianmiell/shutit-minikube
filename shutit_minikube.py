@@ -18,18 +18,19 @@ class shutit_minikube(ShutItModule):
 		# curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
 		# Linux
 		OS = shutit.send_and_get_output('uname')
-		if OS == 'Linux':
-			shutit.send('curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl')
-		elif OS == 'Darwin':
-			shutit.send('curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl')
-		shutit.send('chmod +x kubectl')
-		# Windows
-		#curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/windows/amd64/kubectl.exe
-		if OS == 'Linux':
-			shutit.send('curl https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 > minikube')
-		elif OS == 'Darwin':
-			shutit.send('curl https://storage.googleapis.com/minikube/releases/latest/minikube-darwin-amd64 > minikube')
-		shutit.send('chmod +x minikube')
+		if shutit.cfg[self.module_id]['download']:
+			if OS == 'Linux':
+				shutit.send('curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl')
+			elif OS == 'Darwin':
+				shutit.send('curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl')
+			shutit.send('chmod +x kubectl')
+			# Windows
+			#curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/windows/amd64/kubectl.exe
+			if OS == 'Linux':
+				shutit.send('curl https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 > minikube')
+			elif OS == 'Darwin':
+				shutit.send('curl https://storage.googleapis.com/minikube/releases/latest/minikube-darwin-amd64 > minikube')
+			shutit.send('chmod +x minikube')
 		shutit.send('./minikube delete || true')
 		shutit.send('./minikube config set WantKubectlDownloadMsg false')
 		if shutit.cfg[self.module_id]['do_istio']:
@@ -53,6 +54,7 @@ class shutit_minikube(ShutItModule):
 		shutit.get_config(self.module_id,'do_istio',boolean=True,default=False)
 		shutit.get_config(self.module_id,'istio_version',default='1.0.3')
 		shutit.get_config(self.module_id,'kubernetes_version',default='v1.10.0')
+		shutit.get_config(self.module_id,'download',default=True,boolean=True)
 		return True
 
 def module():
