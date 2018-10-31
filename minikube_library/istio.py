@@ -15,8 +15,10 @@ def do_istio(s, version):
 	s.send('PATH=$(pwd)/bin:${PATH}')
 	# Errors at end here (no matter which version of istio?)
 	s.send('kubectl create -f install/kubernetes/istio-demo.yaml || true')
-	s.send_until('kubectl get pod -n istio-system | grep -v ^NAME | grep -v Running | grep -v Completed | wc -l','0')
+	s.send_until('kubectl get pod -n istio-system | grep -v ^NAME | grep -v Running | grep -v Completed | wc -l','0', cadence=20)
 	s.send("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl -n istio-system --command -- curl -v 'http://istio-pilot.istio-system:8080/v1/registration'")
+
+def do_istioinaction(s):
 	s.send('kubectl create namespace istioinaction')
 	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istioinaction')
 	s.send('cd ../book-source-code')

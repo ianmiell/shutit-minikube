@@ -6,6 +6,7 @@ import inspect
 from shutit_module import ShutItModule
 from minikube_library import kubewatch
 from minikube_library import istio
+from minikube_library import knative
 
 class shutit_minikube(ShutItModule):
 
@@ -37,7 +38,11 @@ class shutit_minikube(ShutItModule):
 			shutit.send('./minikube start --memory=4096 --disk-size=30g --kubernetes-version=' + shutit.cfg[self.module_id]['kubernetes_version'])
 			shutit.send('export PATH=$(pwd):${PATH}')
 			istio.do_istio(shutit, shutit.cfg[self.module_id]['istio_version'])
-		else:
+			istio.do_istioinaction(shutit)
+		if shutit.cfg[self.module_id]['do_knative']:
+			shutit.send('./minikube start --memory=8192 --cpus=4 --disk-size=30g --kubernetes-version=' + shutit.cfg[self.module_id]['kubernetes_version'] + ' --bootstrapper=kubeadm --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"')
+			knative.do_knative(shutit)
+		if shutit.cfg[self.module_id]['do_basic']:
 			shutit.send('./minikube start')
 			shutit.send('./kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')
 			shutit.send('./kubectl expose deployment hello-minikube --type=NodePort')
@@ -51,7 +56,9 @@ class shutit_minikube(ShutItModule):
 
 
 	def get_config(self, shutit):
+		shutit.get_config(self.module_id,'do_basic',boolean=True,default=True)
 		shutit.get_config(self.module_id,'do_istio',boolean=True,default=False)
+		shutit.get_config(self.module_id,'do_knative',boolean=True,default=False)
 		shutit.get_config(self.module_id,'istio_version',default='1.0.3')
 		shutit.get_config(self.module_id,'kubernetes_version',default='v1.10.0')
 		shutit.get_config(self.module_id,'download',default=True,boolean=True)
