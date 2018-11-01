@@ -57,10 +57,10 @@ def do_istioinaction(s):
 	s.pause_point('now go to localhost:8080')
 	s.send('''TRACING=$(kubectl -n istio-system get pod | grep istio-tracing | cut -d ' ' -f 1)''')
 	s.send('''kubectl port-forward -n istio-system "${TRACING}" 8181:16686 &''')
-	s.pause_point('now go to localhost:8081')
+	s.pause_point('now go to localhost:8181')
 	# Generate a failure
 	s.send('''curl ${URL}/api/products -H "failure-percentage: 100"''')
-	# Ingress gateway - TODO: should this be in istio-system or istioinaction?
+	# Ingress gateway
 	s.send('''kubectl create -f chapter-files/chapter2/catalog-virtualservice.yaml''')
 	# Generate traffic
 	for _ in []*10:
@@ -71,7 +71,13 @@ def do_istioinaction(s):
 	# v1 responses only now
 	for _ in []*5:
 		s.send('''curl $URL/api/products''')
-	s.pause_point('ch2 done')
+	# Create version 2 of the service, only available through dark launch.
+	s.send('kubectl apply -f chapter-files/chapter2/catalog-virtualservice-dark-v2.yaml')
+	for _ in []*5:
+		s.send('''curl $URL/api/products''')
+	# Call 'dark launch'
+	s.send('curl $URL/api/products -H "x-dark-launch: v2"')
 	s.send('kill %1')
 	s.send('kill %2')
-	s.pause_point('p58')
+	s.pause_point('ch2 done')
+	s.pause_point('p73')
