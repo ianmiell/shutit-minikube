@@ -94,15 +94,36 @@ def do_istioinaction(s):
 	s.send('docker pull citizenstig/httpbin')
 	s.send('docker run -d --name httpbin citizenstig/httpbin')
 	s.send('docker run -it --rm --link httpbin tutum/curl curl -X GET http://httpbin:8000/headers')
+	# Show envy help
 	s.send('docker run -it --rm istioinaction/envoy:v1.7.0 envoy --help')
+	# Run envoy with no config (will fail)
 	s.send('docker run -it --rm istioinaction/envoy:v1.7.0 envoy || true')
 	s.send('docker run -i --rm --entrypoint "cat" istioinaction/envoy:v1.7.0 /etc/envoy/simple.yaml')
 	s.send('docker run -i --rm --link httpbin istioinaction/envoy:v1.7.0 --entrypoint cat envoy /etc/envoy/simple.yaml')
+	# Run sith a simple config (cat'd above)
 	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple.yaml')
 	s.send('docker logs proxy')
 	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/headers')
+	# Delete proxy
 	s.send('docker rm -f proxy')
+	# Show diff between last config and new one
 	s.send('docker run -i --rm --link httpbin istioinaction/envoy:v1.7.0 --entrypoint diff envoy /etc/envoy/simple.yaml /etc/envoy/simple_change_timeout.yaml')
+	# Run again, but change timeout (different config)
 	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple_change_timeout.yaml')
+	# Get headers
 	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/headers')
-	s.pause_point('p90, 3.3.1')
+	# Get stats
+	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats')
+	# Too much crap - now grep for retry
+	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats | grep retry')
+	# Get list of endpoints - explore!
+	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/')
+	# Delete proxy
+	s.send('docker rm -f proxy')
+	# Run again, but change retry policy
+	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple_retry.yaml')
+	# create a 500 error by calling /status/500
+	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/status/500')
+	# what happened?
+	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats | grep retry')
+	s.pause_point('ch3 done, waiting on ch4')
