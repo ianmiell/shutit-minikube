@@ -1,4 +1,4 @@
-# TODO
+import random
 
 def do_istio(s, version):
 	s.send('rm -rf istiotmp')
@@ -55,14 +55,16 @@ def do_istioinaction(s):
 	s.send('sleep 60')
 	s.send('''kubectl -n istio-system get pod | grep -i running | grep grafana | cut -d ' ' -f 1''')
 	s.send('''GRAFANA=$(kubectl -n istio-system get pod | grep -i running | grep grafana | cut -d ' ' -f 1)''')
-	s.send('''kubectl port-forward -n istio-system "${GRAFANA}" 8080:3000 &''')
-	s.pause_point('now go to localhost:8080')
+	random_port = str(random.randrange(49152,65535))
+	s.send('''kubectl port-forward -n istio-system "${GRAFANA}" ''' + random_port + ''':3000 &''')
+	s.pause_point('now go to localhost:' + random_port)
 	# Jaeger tracing
 	s.send('sleep 60')
 	s.send('''kubectl -n istio-system get pod | grep istio-tracing | cut -d ' ' -f 1''')
 	s.send('''TRACING=$(kubectl -n istio-system get pod | grep istio-tracing | cut -d ' ' -f 1)''')
-	s.send('''kubectl port-forward -n istio-system "${TRACING}" 8181:16686 &''')
-	s.pause_point('now go to localhost:8181')
+	random_port = str(random.randrange(49152,65535))
+	s.send('''kubectl port-forward -n istio-system "${TRACING}" ''' + random_port + ''':16686 &''')
+	s.pause_point('now go to localhost:' + random_port)
 	# Generate a failure
 	s.send('''curl ${URL}/api/products -H "failure-percentage: 100"''')
 	# Ingress gateway
