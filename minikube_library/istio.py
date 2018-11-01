@@ -52,9 +52,14 @@ def do_istioinaction(s):
 	for _ in []*5:
 		s.send('do curl $URL/api/products; sleep .5; done')
 	# Grafana
+	s.send('sleep 60')
+	s.send('''kubectl -n istio-system get pod | grep -i running | grep grafana | cut -d ' ' -f 1''')
 	s.send('''GRAFANA=$(kubectl -n istio-system get pod | grep -i running | grep grafana | cut -d ' ' -f 1)''')
 	s.send('''kubectl port-forward -n istio-system "${GRAFANA}" 8080:3000 &''')
 	s.pause_point('now go to localhost:8080')
+	# Jaeger tracing
+	s.send('sleep 60')
+	s.send('''kubectl -n istio-system get pod | grep istio-tracing | cut -d ' ' -f 1''')
 	s.send('''TRACING=$(kubectl -n istio-system get pod | grep istio-tracing | cut -d ' ' -f 1)''')
 	s.send('''kubectl port-forward -n istio-system "${TRACING}" 8181:16686 &''')
 	s.pause_point('now go to localhost:8181')
