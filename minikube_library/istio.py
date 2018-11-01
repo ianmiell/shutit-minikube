@@ -86,5 +86,11 @@ def do_istioinaction(s):
 	s.send('curl $URL/api/products -H "x-dark-launch: v2"')
 	s.send('kill %1')
 	s.send('kill %2')
-	s.pause_point('ch2 done')
-	s.pause_point('p73')
+	s.pause_point('ch2 done, start ch3')
+	s.send('''eval $(minikube docker-env)''')
+	s.send('docker ps')
+	s.send('docker pull istioinaction/envoy:v1.7.0')
+	s.send('docker pull tutum/curl')
+	s.send('docker pull citizenstig/httpbin')
+
+	s.pause_point('p87')
