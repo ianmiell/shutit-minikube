@@ -8,3 +8,23 @@ def do_knative(s):
 	s.send_until('kubectl get pod -n knative-serving | grep -v ^NAME | grep -v Running | wc -l','0',cadence=20)
 	s.send('sleep 60')
 	s.send('''echo $(minikube ip):$(kubectl get svc knative-ingressgateway --namespace istio-system --output 'jsonpath={.spec.ports[?(@.port==80)].nodePort}')''')
+	# https://github.com/knative/docs/blob/master/install/getting-started-knative-app.md
+	s.run_script('''cat > service.yaml << END
+apiVersion: serving.knative.dev/v1alpha1 # Current version of Knative
+kind: Service
+metadata:
+  name: helloworld-go # The name of the app
+  namespace: default # The namespace the app will use
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        spec:
+          container:
+            image: gcr.io/knative-samples/helloworld-go # The URL to the image of the app
+            env:
+            - name: TARGET # The environment variable printed out by the sample app
+              value: "Go Sample v1"
+END
+kubectl apply --filename service.yaml''')
+	s.pause_point('continue in getting-started-knative-app.md')
