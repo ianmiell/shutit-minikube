@@ -38,7 +38,7 @@ class shutit_minikube(ShutItModule):
 		shutit.send('./minikube config set WantKubectlDownloadMsg false')
 		if shutit.cfg[self.module_id]['do_client_go']:
 			shutit.send('./minikube start --kubernetes-version=v' + shutit.cfg[self.module_id]['kubernetes_version'])
-			client_go.do_client_go(shutit)
+			client_go.do_client_go(shutit,  shutit.cfg[self.module_id]['kubernetes_version'])
 		if shutit.cfg[self.module_id]['do_istio']:
 			shutit.send('./minikube start --memory=4096 --disk-size=30g --kubernetes-version=' + shutit.cfg[self.module_id]['kubernetes_version'])
 			istio.do_istio(shutit, shutit.cfg[self.module_id]['istio_version'])
