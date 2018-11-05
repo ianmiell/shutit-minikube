@@ -36,7 +36,7 @@ class shutit_minikube(ShutItModule):
 		shutit.send('export PATH=$(pwd):${PATH}')
 		shutit.send('./minikube delete || true')
 		shutit.send('./minikube config set WantKubectlDownloadMsg false')
-		if shutit.cfg[self.module_id]['do_istio']:
+		if shutit.cfg[self.module_id]['do_client_go']:
 			shutit.send('./minikube start --kubernetes-version=v' + shutit.cfg[self.module_id]['kubernetes_version'])
 			client_go.do_client_go(shutit)
 		if shutit.cfg[self.module_id]['do_istio']:
