@@ -19,6 +19,7 @@ END''')
 	s.send('go get k8s.io/client-go/...')
 	s.send('cd ${GOPATH}/src')
 	s.send('dep init shutit_kubernetes')
+	s.send('cd shutit_kubernetes')
 	s.send(r'''cat > k.go << END
 package main
 
