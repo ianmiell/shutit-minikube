@@ -41,6 +41,14 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
+
+    // clientset maps to kubernetes/clientset.go in client-go
+    // CoreV1 seems to trace back to: k8s.io/client-go/kubernetes/typed/core/v1, and thence to: kubernetes/typed/core/v1/core_client.go
+    // This Interface has a bunch of items in it, eg: PodsGetter
+    // type PodsGetter interface {
+    //   Pods(namespace string) PodInterface
+    // }
+    // Pods is back at kubernetes/typed/core/v1/core_client.go where it's implemented (?) and it runs newPods, which is in: kubernetes/typed/core/v1/pod.go
     pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})
     if err != nil {
         panic(err.Error())
