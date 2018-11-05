@@ -32,7 +32,7 @@ import (
 )
 
 func main() {
-    kubeconfig = "/home/imiell/.kube/config"
+    kubeconfig := "/home/imiell/.kube/config"
     config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
     if err != nil {
         log.Fatal(err)
