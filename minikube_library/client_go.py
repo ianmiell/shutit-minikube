@@ -57,8 +57,6 @@ func main() {
     for _, pod := range pods.Items {
         fmt.Printf("Pod name %s\n", pod.GetName())
     }
-    // TODO: determine how to get a list of daemonsets. This will show how to use a different typed in the client-go kubernetes folder
-    // TODO: Miell@Ians-Air-2:/space/git/client-go/kubernetes/typed  ⑂ v9.0.0    vi apps/v1/daemonset.go - is that implemented in core_client.go?
     // Get an AppsV1Client
     // ListOptions are as per:
     // 'ListOptions is the query options to a standard REST list call.
@@ -73,6 +71,7 @@ func main() {
         // TODO: any other functions we can get?
         fmt.Printf("Daemonset name %s\n", dset.GetName())
     }
+    //TODO: Next, have a look at client-go/discovery instead of client-go/kubernetes
 }
 END''')
 	s.send('go build')
