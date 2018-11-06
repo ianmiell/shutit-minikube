@@ -72,6 +72,17 @@ func main() {
         fmt.Printf("Daemonset name %s\n", dset.GetName())
     }
     //TODO: Next, have a look at client-go/discovery instead of client-go/kubernetes
+    //// NEW - not working
+    //discoveryset, err := discovery.NewDiscoveryClientForConfig(config)
+    //if err != nil {
+    //    log.Fatal(err)
+    //}
+        //api_resource_list, err := discoveryset.ServerResources()
+    //if err != nil {
+    //    panic(err.Error())
+    //}
+    //// TODO: use reflect for reflection of api_resource_list
+    //fmt.Printf("There are %d resources in the api_resource_list\n", len(api_resource_list.GroupVersion))
 }
 END''')
 	s.send('go build')
