@@ -57,6 +57,7 @@ func main() {
     for _, pod := range pods.Items {
         fmt.Printf("Pod name %s\n", pod.GetName())
     }
+	// TODO: Miell@Ians-Air-2:/space/git/client-go/kubernetes/typed  ⑂ v9.0.0    vi apps/v1/daemonset.go - is that implemented in core_client.go?
 }
 END''')
 	s.send('go build')
