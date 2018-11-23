@@ -13,6 +13,7 @@ def do_kubebuilder(s):
 	s.send('rm -rf $GOPATH/src/kubebuilder_egtmp')
 	s.send('mkdir -p $GOPATH/src/kubebuilder_egtmp')
 	s.send('cd $GOPATH/src/kubebuilder_egtmp')
-	s.send('kubebuilder init')
-	s.send('kubebuilder create api')
+	# See also: https://book.kubebuilder.io/basics/project_creation_and_structure.html
+	s.multisend('kubebuilder init',{'ecommended':'y'})
+	s.multisend('kubebuilder create api --group workloads --version v1beta1 --kind ContainerSet',{'Create':'y'})
 	s.pause_point('https://book.kubebuilder.io/getting_started/hello_world.html')

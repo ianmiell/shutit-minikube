@@ -49,6 +49,8 @@ class shutit_minikube(ShutItModule):
 			knative.do_knative(shutit)
 		if shutit.cfg[self.module_id]['do_kubebuilder']:
 			kubebuilder.do_kubebuilder(shutit)
+		if shutit.cfg[self.module_id]['do_flux']:
+			kubebuilder.do_flux(shutit)
 		if shutit.cfg[self.module_id]['do_basic']:
 			shutit.send('./minikube start')
 			shutit.send('./kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')
@@ -66,6 +68,7 @@ class shutit_minikube(ShutItModule):
 		shutit.get_config(self.module_id,'do_knative',boolean=True,default=False)
 		shutit.get_config(self.module_id,'do_client_go',boolean=True,default=False)
 		shutit.get_config(self.module_id,'do_kubebuilder',boolean=True,default=False)
+		shutit.get_config(self.module_id,'do_flux',boolean=True,default=False)
 		shutit.get_config(self.module_id,'istio_version',default='1.0.3')
 		shutit.get_config(self.module_id,'kubernetes_version',default='1.10.0')
 		shutit.get_config(self.module_id,'download',default=True,boolean=True)
