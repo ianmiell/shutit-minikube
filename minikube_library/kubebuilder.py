@@ -1,7 +1,6 @@
 
-def do_kubebuilder(s):
+def do_kubebuilder(s, pw):
 	s.send('cd')
-	s.send('rm -rf kubebuilder_dir')
 	s.send('version=1.0.5')
 	s.send('arch=amd64')
 	# Linux
@@ -13,8 +12,9 @@ def do_kubebuilder(s):
 	s.send('os=' + os)
 	s.send('curl -L -O https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${version}/kubebuilder_${version}_${os}_${arch}.tar.gz')
 	s.send('tar -zxvf kubebuilder_${version}_${os}_${arch}.tar.gz')
-	s.send('mv kubebuilder_${version}_${os}_${arch} kubebuilder_dir')
-	s.send('export PATH=$PATH:~/kubebuilder_dir/bin')
+	s.send('rm -rf /usr/local/kubebuilder')
+	s.multisend('sudo mv kubebuilder_${version}_${os}_${arch} /usr/local/kubebuilder',{'assword':pw})
+	s.send('export PATH=$PATH:/usr/local/kubebuilder/bin')
 	s.send('rm -rf $GOPATH/src/kubebuilder_egtmp')
 	s.send('mkdir -p $GOPATH/src/kubebuilder_egtmp')
 	s.send('cd $GOPATH/src/kubebuilder_egtmp')

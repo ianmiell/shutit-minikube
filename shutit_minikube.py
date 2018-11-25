@@ -14,7 +14,16 @@ class shutit_minikube(ShutItModule):
 
 
 	def build(self, shutit):
-		# https://kubernetes.io/docs/user-guide/prereqs/
+		################################################################################
+		# Extract password from 'secret' file (which git ignores).
+		# TODO: check perms are only readable by user
+		try:
+		    pw = open('secret').read().strip()
+		except IOError:
+		    pw = ''
+		if pw == '':
+		    shutit.log('''================================================================================\nWARNING! IF THIS DOES NOT WORK YOU MAY NEED TO SET UP A 'secret' FILE IN THIS FOLDER!\n================================================================================''',level=logging.CRITICAL)
+		    pw='nopass'
 
 		# ASSUMING LINUX FOR NOW
 		# OS X
@@ -48,7 +57,7 @@ class shutit_minikube(ShutItModule):
 			shutit.send('./minikube start --memory=8192 --cpus=4 --disk-size=30g --kubernetes-version=' + shutit.cfg[self.module_id]['kubernetes_version'] + ' --bootstrapper=kubeadm --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"')
 			knative.do_knative(shutit)
 		if shutit.cfg[self.module_id]['do_kubebuilder']:
-			kubebuilder.do_kubebuilder(shutit)
+			kubebuilder.do_kubebuilder(shutit,pw)
 		if shutit.cfg[self.module_id]['do_flux']:
 			kubebuilder.do_flux(shutit)
 		if shutit.cfg[self.module_id]['do_basic']:
