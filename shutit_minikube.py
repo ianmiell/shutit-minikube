@@ -57,8 +57,10 @@ class shutit_minikube(ShutItModule):
 			shutit.send('./minikube start --memory=8192 --cpus=4 --disk-size=30g --kubernetes-version=' + shutit.cfg[self.module_id]['kubernetes_version'] + ' --bootstrapper=kubeadm --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"')
 			knative.do_knative(shutit)
 		if shutit.cfg[self.module_id]['do_kubebuilder']:
+			shutit.send('./minikube start')
 			kubebuilder.do_kubebuilder(shutit,pw)
 		if shutit.cfg[self.module_id]['do_flux']:
+			shutit.send('./minikube start')
 			kubebuilder.do_flux(shutit)
 		if shutit.cfg[self.module_id]['do_basic']:
 			shutit.send('./minikube start')
