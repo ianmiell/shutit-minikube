@@ -84,6 +84,7 @@ class shutit_minikube(ShutItModule):
 		shutit.get_config(self.module_id,'do_client_go',boolean=True,default=False)
 		shutit.get_config(self.module_id,'do_kubebuilder',boolean=True,default=False)
 		shutit.get_config(self.module_id,'do_flux',boolean=True,default=False)
+		shutit.get_config(self.module_id,'do_operator',boolean=True,default=False)
 		shutit.get_config(self.module_id,'istio_version',default='1.0.3')
 		shutit.get_config(self.module_id,'kubernetes_version',default='1.10.0')
 		shutit.get_config(self.module_id,'download',default=True,boolean=True)

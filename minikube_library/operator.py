@@ -191,7 +191,7 @@ func (c *NamespaceController) createRoleBinding(obj interface{}) {
 }
 EOF''')
 	s.send('cd ..')
-	s.send('cat > Makefile << EOF
+	s.send('''cat > Makefile << 'EOF'
 OPERATOR_NAME  := namespace-rolebinding-operator
 VERSION := $(shell date +%Y%m%d%H%M)
 IMAGE := treacher/$(OPERATOR_NAME)
@@ -212,6 +212,8 @@ bin/%/$(OPERATOR_NAME):
 build-image: bin/linux/$(OPERATOR_NAME)
 	docker build . -t $(IMAGE):$(VERSION)
 EOF''')
-	TODO see https://raw.githubusercontent.com/treacher/namespace-rolebinding-operator
+	s.send('make install_deps')
+	s.send('make build')
+	s.send('./bin/namespace-rolebinding-operator --run-outside-cluster 1')
 
 	s.pause_point('https://medium.com/@mtreacher/writing-a-kubernetes-operator-a9b86f19bfb9')
