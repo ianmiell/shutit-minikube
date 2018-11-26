@@ -9,6 +9,7 @@ from minikube_library import istio
 from minikube_library import knative
 from minikube_library import client_go
 from minikube_library import kubebuilder
+from minikube_library import operator
 
 class shutit_minikube(ShutItModule):
 
@@ -59,9 +60,12 @@ class shutit_minikube(ShutItModule):
 		if shutit.cfg[self.module_id]['do_kubebuilder']:
 			shutit.send('./minikube start')
 			kubebuilder.do_kubebuilder(shutit,pw)
+		if shutit.cfg[self.module_id]['do_operator']:
+			shutit.send('./minikube start')
+			operator.do_operator(shutit,pw)
 		if shutit.cfg[self.module_id]['do_flux']:
 			shutit.send('./minikube start')
-			kubebuilder.do_flux(shutit)
+			flux.do_flux(shutit)
 		if shutit.cfg[self.module_id]['do_basic']:
 			shutit.send('./minikube start')
 			shutit.send('./kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')
