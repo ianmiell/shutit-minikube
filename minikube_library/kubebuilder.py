@@ -21,5 +21,10 @@ def do_kubebuilder(s, pw):
 	# See also: https://book.kubebuilder.io/basics/project_creation_and_structure.html
 	s.multisend('kubebuilder init',{'ecommended':'y'})
 	s.multisend('kubebuilder create api --group workloads --version v1beta1 --kind ContainerSet',{'Create':'y'})
-	s.send('env | grep PATH')
+	# Now do another one
+	s.send('rm -rf ~/go/src/kubebuilder_egtmp2')
+	s.send('mkdir -p ~/go/src/kubebuilder_egtmp2')
+	s.send('cd ~/go/src/kubebuilder_egtmp2')
+	s.send("""kubebuilder init --domain ian.io --license apache2 --owner 'Me'""")
+	s.send('kubebuilder create api --group mygroup --version v1beta1 --kind MyArbitraryKind')
 	s.pause_point('https://book.kubebuilder.io/getting_started/hello_world.html')
