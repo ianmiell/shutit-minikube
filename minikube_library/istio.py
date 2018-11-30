@@ -105,7 +105,7 @@ def do_istioinaction(s):
 	# Delete proxy
 	s.send('docker rm -f proxy')
 	# Show diff between last config and new one
-	s.send('docker run -i --rm --link httpbin istioinaction/envoy:v1.7.0 --entrypoint diff envoy /etc/envoy/simple.yaml /etc/envoy/simple_change_timeout.yaml')
+	s.send('docker run -i --rm --link httpbin --entrypoint diff istioinaction/envoy:v1.7.0 /etc/envoy/simple.yaml /etc/envoy/simple_change_timeout.yaml')
 	# Run again, but change timeout (different config)
 	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple_change_timeout.yaml')
 	# Get headers
