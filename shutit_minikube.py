@@ -32,6 +32,7 @@ class shutit_minikube(ShutItModule):
 		# curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
 		# Linux
 		OS = shutit.send_and_get_output('uname')
+		shutit.send('mkdir -p ~/bin')
 		if shutit.cfg[self.module_id]['download']:
 			if OS == 'Linux':
 				shutit.send('curl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl > ~/bin/kubectl')
