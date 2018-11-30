@@ -10,6 +10,7 @@ fi
 git submodule init
 git submodule update
 $SHUTIT build --echo -d bash \
+	-w \
 	-s techniques.shutit_minikube.shutit_minikube download yes \
 	-s techniques.shutit_minikube.shutit_minikube do_knative no \
 	-s techniques.shutit_minikube.shutit_minikube do_istio yes \

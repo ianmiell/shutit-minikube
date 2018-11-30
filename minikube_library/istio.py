@@ -164,6 +164,10 @@ def do_istioinaction(s):
 	# gets an externally routable IP address.
 	# In Istio, A VirtualService resource maps a FQDN, version and other routing properties to services.
 	# VirtualService contains the preferred gateway, referenced by gateways: in the yaml spec.
+	# Istio Gateway handles the L4 and L5 concerns while Gateway VirtualService handles the L7 concerns.
+	# L4 concerns: Ports
+	# L5 concerns: Connecting to (?)
+	# L7 concerns: HTTP headers
 	s.send('kubectl create -f chapter-files/chapter4/coolstore-vs.yaml',note='create the VirtualService')
 	# Check the apigateway and catalog pods are there.
 	s.send('kubectl get pod',note='should see two pods ready')
@@ -175,4 +179,12 @@ def do_istioinaction(s):
 	s.send('curl $URL/api/products',note='Should fail')
 	# p.110
 	s.send('curl $URL/api/products -H "Host: apiserver.istioinaction.io"',note='Overriding the host should work')
+	# Securing (p.112)
+	# Istio’s gateway implementation allows us to terminate incoming TLS/SSL traffic
+		# pass it through to the backend services,
+		# redirect any non-TLS traffic to the proper TLS ports as well as
+		# implement mutual TLS.
+	s.send('kubectl create -n istio-system secret tls istio-ingressgateway-certs --key chapter-files/chapter4/certs/3_application/private/apiserver.istioinaction.io.key.pem --cert chapter-files/chapter4/certs/3_application/certs/apiserver.istioinaction.io.cert.pem',note='Start by creating the istio-ingressgateway-certs secret')
+	s.send('kubectl replace -f chapter-files/chapter4/coolstore-gw-tls.yaml',note='configure the gateway to use these certs/secrets')
+	TODO: p.115 - add notes throughout above.
 	s.pause_point('doing ch4')
