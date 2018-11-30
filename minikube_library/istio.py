@@ -98,7 +98,6 @@ def do_istioinaction(s):
 	# Run envoy with no config (will fail)
 	s.send('docker run -it --rm istioinaction/envoy:v1.7.0 envoy || true')
 	s.send('docker run -i --rm --entrypoint "cat" istioinaction/envoy:v1.7.0 /etc/envoy/simple.yaml')
-	s.send('docker run -i --rm --link httpbin istioinaction/envoy:v1.7.0 --entrypoint cat envoy /etc/envoy/simple.yaml')
 	# Run sith a simple config (cat'd above)
 	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple.yaml')
 	s.send('docker logs proxy')
