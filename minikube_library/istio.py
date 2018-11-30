@@ -126,7 +126,9 @@ def do_istioinaction(s):
 	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/status/500')
 	# what happened?
 	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats | grep retry')
-	s.pause_point('ch3 done, waiting on ch4')
 	# CHAPTER 4
 	s.send('INGRESS_POD=$(kubectl get pod -n istio-system | grep ingressgateway | cut -d ' ' -f 1)')
 	s.send('kubectl -n istio-system exec $INGRESS_POD ps aux')
+	s.send'kubectl create -f chapter-files/chapter4/coolstore-gw.yaml')
+	s.send('istioctl proxy-config listener $INGRESS_POD -n istio-system')
+	s.pause_point('doing ch4')

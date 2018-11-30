@@ -34,48 +34,48 @@ class shutit_minikube(ShutItModule):
 		OS = shutit.send_and_get_output('uname')
 		if shutit.cfg[self.module_id]['download']:
 			if OS == 'Linux':
-				shutit.send('curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl')
+				shutit.send('curl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl > ~/bin/kubectl')
 			elif OS == 'Darwin':
-				shutit.send('curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl')
-			shutit.send('chmod +x kubectl')
+				shutit.send('curl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl > ~/bin/kubectl')
+			shutit.send('chmod +x ~/bin/kubectl')
 			# Windows
 			#curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/windows/amd64/kubectl.exe
 			if OS == 'Linux':
-				shutit.send('curl https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 > minikube')
+				shutit.send('curl https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 > ~/bin/minikube')
 			elif OS == 'Darwin':
-				shutit.send('curl https://storage.googleapis.com/minikube/releases/latest/minikube-darwin-amd64 > minikube')
-			shutit.send('chmod +x minikube')
+				shutit.send('curl https://storage.googleapis.com/minikube/releases/latest/minikube-darwin-amd64 > ~/bin/minikube')
+			shutit.send('chmod +x ~/bin/minikube')
 		shutit.send('export PATH=$(pwd):${PATH}')
-		shutit.send('./minikube delete || true')
-		shutit.send('./minikube config set WantKubectlDownloadMsg false')
+		shutit.send('minikube delete || true')
+		shutit.send('minikube config set WantKubectlDownloadMsg false')
 		if shutit.cfg[self.module_id]['do_client_go']:
-			shutit.send('./minikube start --kubernetes-version=v' + shutit.cfg[self.module_id]['kubernetes_version'])
+			shutit.send('minikube start --kubernetes-version=v' + shutit.cfg[self.module_id]['kubernetes_version'])
 			client_go.do_client_go(shutit,  shutit.cfg[self.module_id]['kubernetes_version'])
 		if shutit.cfg[self.module_id]['do_istio']:
-			shutit.send('./minikube start --memory=4096 --disk-size=30g --kubernetes-version=v' + shutit.cfg[self.module_id]['kubernetes_version'])
+			shutit.send('minikube start --memory=4096 --disk-size=30g --kubernetes-version=v' + shutit.cfg[self.module_id]['kubernetes_version'])
 			istio.do_istio(shutit, shutit.cfg[self.module_id]['istio_version'])
 			istio.do_istioinaction(shutit)
 		if shutit.cfg[self.module_id]['do_knative']:
-			shutit.send('./minikube start --memory=8192 --cpus=4 --disk-size=30g --kubernetes-version=' + shutit.cfg[self.module_id]['kubernetes_version'] + ' --bootstrapper=kubeadm --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"')
+			shutit.send('minikube start --memory=8192 --cpus=4 --disk-size=30g --kubernetes-version=' + shutit.cfg[self.module_id]['kubernetes_version'] + ' --bootstrapper=kubeadm --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"')
 			knative.do_knative(shutit)
 		if shutit.cfg[self.module_id]['do_kubebuilder']:
-			shutit.send('./minikube start')
+			shutit.send('minikube start')
 			kubebuilder.do_kubebuilder(shutit,pw)
 		if shutit.cfg[self.module_id]['do_operator']:
-			shutit.send('./minikube start')
+			shutit.send('minikube start')
 			operator.do_operator(shutit,pw)
 		if shutit.cfg[self.module_id]['do_flux']:
-			shutit.send('./minikube start')
+			shutit.send('minikube start')
 			flux.do_flux(shutit)
 		if shutit.cfg[self.module_id]['do_admission_controller']:
-			shutit.send('./minikube start')
+			shutit.send('minikube start')
 			admission_controller.do_admission_controller(shutit)
 		if shutit.cfg[self.module_id]['do_basic']:
-			shutit.send('./minikube start')
-			shutit.send('./kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')
-			shutit.send('./kubectl expose deployment hello-minikube --type=NodePort')
-			shutit.send('./kubectl get pod')
-			shutit.send('curl $(./minikube service hello-minikube --url)')
+			shutit.send('minikube start')
+			shutit.send('kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')
+			shutit.send('kubectl expose deployment hello-minikube --type=NodePort')
+			shutit.send('kubectl get pod')
+			shutit.send('curl $(minikube service hello-minikube --url)')
 
 		shutit.pause_point('done')
 		return True
