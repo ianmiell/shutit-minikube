@@ -57,14 +57,14 @@ def do_istioinaction(s):
 	s.send('''GRAFANA=$(kubectl -n istio-system get pod | grep -i running | grep grafana | cut -d ' ' -f 1)''')
 	random_port = str(random.randrange(49152,65535))
 	s.send('''kubectl port-forward -n istio-system "${GRAFANA}" ''' + random_port + ''':3000 &''')
-	s.pause_point('now go to localhost:' + random_port)
+	#s.pause_point('now go to localhost:' + random_port)
 	# Jaeger tracing
 	s.send('sleep 60')
 	s.send('''kubectl -n istio-system get pod | grep istio-tracing | cut -d ' ' -f 1''')
 	s.send('''TRACING=$(kubectl -n istio-system get pod | grep istio-tracing | cut -d ' ' -f 1)''')
 	random_port = str(random.randrange(49152,65535))
 	s.send('''kubectl port-forward -n istio-system "${TRACING}" ''' + random_port + ''':16686 &''')
-	s.pause_point('now go to localhost:' + random_port)
+	#s.pause_point('now go to localhost:' + random_port)
 	# Generate a failure
 	s.send('''curl ${URL}/api/products -H "failure-percentage: 100"''')
 	# Ingress gateway
@@ -127,6 +127,52 @@ def do_istioinaction(s):
 	# CHAPTER 4
 	s.send('INGRESS_POD=$(kubectl get pod -n istio-system | grep ingressgateway | cut -d ' ' -f 1)')
 	s.send('kubectl -n istio-system exec $INGRESS_POD ps aux')
-	s.send'kubectl create -f chapter-files/chapter4/coolstore-gw.yaml')
+	s.send('kubectl create -f chapter-files/chapter4/coolstore-gw.yaml')
+	# Expect to see a listener on 0.0.0.0:80 of type HTTP
 	s.send('istioctl proxy-config listener $INGRESS_POD -n istio-system')
+	# View the route in json. Start by matching everything to 404
+	s.send('istioctl proxy-config route $INGRESS_POD -n istio-system')
+#[
+# {
+# "name": "http.80",
+# "virtualHosts": [
+# {
+# "name": "blackhole:80",
+# "domains": [
+# "*"
+# ],
+# "routes": [
+# {
+# "match": {
+# "prefix": "/"
+# },
+# "directResponse": {
+# "status": 404
+# },
+# "perFilterConfig": {
+# "mixer": {}
+# }
+# }
+# ]
+# }
+# ],
+# "validateClusters": false
+# }
+#]
+	# Pod running on the custom gateway should be listening on an address that is exposed outside the cluster.
+	# For example on local minikube, we're listening on a NodePort. If on GKE you'll want to use a loadblaancer that
+	# gets an externally routable IP address.
+	# In Istio, A VirtualService resource maps a FQDN, version and other routing properties to services.
+	# VirtualService contains the preferred gateway, referenced by gateways: in the yaml spec.
+	s.send('kubectl create -f chapter-files/chapter4/coolstore-vs.yaml',note='create the VirtualService')
+	# Check the apigateway and catalog pods are there.
+	s.send('kubectl get pod',note='should see two pods ready')
+	s.send('kubectl get gateway',note='check gateway exists')
+	s.send('kubectl get virtualservice',note='check virtualservice exists')
+	s.send('HTTP_HOST=$(minikube ip)')
+	s.send('''HTTP_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')''')
+	s.send('URL=$HTTP_HOST:$HTTP_PORT')
+	s.send('curl $URL/api/products',note='Should fail')
+	# p.110
+	s.send('curl $URL/api/products -H "Host: apiserver.istioinaction.io"',note='Overriding the host should work')
 	s.pause_point('doing ch4')
