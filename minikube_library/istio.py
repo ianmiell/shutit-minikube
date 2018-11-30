@@ -1,9 +1,9 @@
 import random
 
 def do_istio(s, version):
-	s.send('rm -rf istiotmp')
-	s.send('mkdir -p istiotmp')
-	s.send('cd istiotmp')
+	s.send('rm -rf ~/minikube_tmp/istiotmp')
+	s.send('mkdir -p ~/minikube_tmp/istiotmp')
+	s.send('cd ~/minikube_tmp/istiotmp')
 	OS = s.send_and_get_output('uname')
 	s.send('git clone https://github.com/istioinaction/book-source-code')
 	if OS == 'Linux':
@@ -127,3 +127,6 @@ def do_istioinaction(s):
 	# what happened?
 	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats | grep retry')
 	s.pause_point('ch3 done, waiting on ch4')
+	# CHAPTER 4
+	s.send('INGRESS_POD=$(kubectl get pod -n istio-system | grep ingressgateway | cut -d ' ' -f 1)')
+	s.send('kubectl -n istio-system exec $INGRESS_POD ps aux')

@@ -1,8 +1,8 @@
 
 def do_operator(s, pw):
 	s.send('cd')
-	s.send('rm -rf minikube_operator')
-	s.send('mkdir -p minikube_operator')
+	s.send('rm -rf ~/minikube_tmp/operator')
+	s.send('mkdir -p ~/minikube_tmp/operator')
 	s.send('')
 	# Aim is to automate this rolebinding
 	#---
@@ -20,6 +20,7 @@ def do_operator(s, pw):
 	#  name: edit
 	#  apiGroup: rbac.authorization.k8s.io
 	# See also: https://github.com/treacher/namespace-rolebinding-operator
+	s.send('cd ~/minikube_tmp/operator')
 	s.send('rm -rf cmd')
 	s.send('mkdir cmd')
 	s.send('cd cmd')

@@ -10,7 +10,7 @@ from minikube_library import knative
 from minikube_library import client_go
 from minikube_library import kubebuilder
 from minikube_library import operator
-from minikube_library import *
+from minikube_library import admission_controller
 
 class shutit_minikube(ShutItModule):
 
@@ -52,7 +52,7 @@ class shutit_minikube(ShutItModule):
 			shutit.send('./minikube start --kubernetes-version=v' + shutit.cfg[self.module_id]['kubernetes_version'])
 			client_go.do_client_go(shutit,  shutit.cfg[self.module_id]['kubernetes_version'])
 		if shutit.cfg[self.module_id]['do_istio']:
-			shutit.send('./minikube start --memory=4096 --disk-size=30g --kubernetes-version=' + shutit.cfg[self.module_id]['kubernetes_version'])
+			shutit.send('./minikube start --memory=4096 --disk-size=30g --kubernetes-version=v' + shutit.cfg[self.module_id]['kubernetes_version'])
 			istio.do_istio(shutit, shutit.cfg[self.module_id]['istio_version'])
 			istio.do_istioinaction(shutit)
 		if shutit.cfg[self.module_id]['do_knative']:
@@ -91,7 +91,7 @@ class shutit_minikube(ShutItModule):
 		shutit.get_config(self.module_id,'do_operator',boolean=True,default=False)
 		shutit.get_config(self.module_id,'do_admission_controller',boolean=True,default=False)
 		shutit.get_config(self.module_id,'istio_version',default='1.0.3')
-		shutit.get_config(self.module_id,'kubernetes_version',default='1.10.0')
+		shutit.get_config(self.module_id,'kubernetes_version',default='1.11.0')
 		shutit.get_config(self.module_id,'download',default=True,boolean=True)
 		return True
 
