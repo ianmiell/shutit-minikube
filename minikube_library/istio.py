@@ -20,7 +20,7 @@ def do_istio(s, version):
 
 def do_istioinaction(s):
 	# Create istioinaction namespace
-	s.send('kubectl create namespace istioinaction',note'Create namespace')
+	s.send('kubectl create namespace istioinaction',note='Create namespace')
 	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istioinaction',note='Update kubectl context')
 	s.send('cd ../book-source-code')
 	s.send('kubectl create -f <(istioctl kube-inject -f install/catalog-service/catalog-all.yaml)',note='Deploy catalog app')
@@ -60,7 +60,7 @@ def do_istioinaction(s):
 	s.send('''kubectl port-forward -n istio-system "${TRACING}" ''' + random_port + ''':16686 &''',note='Forward port from tracing service:16686 to random port')
 	#s.pause_point('now go to localhost:' + random_port)
 	# Generate a failure
-	s.send('''curl ${URL}/api/products -H "failure-percentage: 100"'''.note='Induce a failure in lookup')
+	s.send('''curl ${URL}/api/products -H "failure-percentage: 100"''',note='Induce a failure in lookup')
 	s.send('''kubectl create -f chapter-files/chapter2/catalog-virtualservice.yaml''',note='Set up ingress gateway')
 	# Generate traffic
 	for _ in []*10:
@@ -164,7 +164,7 @@ def do_istioinaction(s):
 	s.send('kubectl replace -f chapter-files/chapter4/coolstore-gw-tls.yaml',note='configure the gateway to use these certs/secrets')
 	s.send('kubectl replace -f chapter-files/chapter4/coolstore-gw-tls.yaml',note='replace gateway with new gateway resource')
 	s.send('HTTPS_HOST=$(minikube ip)',note='Get minikube IP')
-	s.send('''HTTPS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}''',note='Get https port for ingressgateway service')
+	s.send("""HTTPS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}'""",note='Get https port for ingressgateway service')
 	s.send('URL="$HTTPS_HOST:$HTTPS_PORT"',note='Construct URL')
 	s.send('curl -v -H "Host: apiserver.istioinaction.io" https://$URL/api/products',note='Should fail?')
 	s.pause_point('doing ch4')
