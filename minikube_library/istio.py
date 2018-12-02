@@ -18,9 +18,11 @@ def do_istio(s, version):
 	s.send_until('kubectl get pod -n istio-system | grep -v ^NAME | grep -v Running | grep -v Completed | wc -l','0', cadence=20)
 	s.send("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl -n istio-system --command -- curl -v 'http://istio-pilot.istio-system:8080/v1/registration'")
 
+
+# Istio in Action book
 def do_istioinaction(s):
-	# Create istioinaction namespace
-	s.send('kubectl create namespace istioinaction',note='Create namespace')
+
+	s.send('kubectl create namespace istioinaction',note='Create istioinaction namespace')
 	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istioinaction',note='Update kubectl context')
 	s.send('cd ../book-source-code')
 	s.send('kubectl create -f <(istioctl kube-inject -f install/catalog-service/catalog-all.yaml)',note='Deploy catalog app')
@@ -37,8 +39,8 @@ def do_istioinaction(s):
 	# Ingress gateway in istio-system
 	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istio-system',note='Change to istio system namespace')
 	s.send('kubectl create -f chapter-files/chapter2/ingress-gateway.yaml',note='Create ingress gateway')
-	s.send("""URL=$(minikube ip):$(kubectl get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')""",note='Construct ingress gateway URL')
-	s.send('curl ${URL}/api/products',note='Curl for products')
+	URL = s.send_and_get_output("""$(minikube ip):$(kubectl get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')""",note='Construct ingress gateway URL')
+	s.send('curl ' + URL + '/api/products',note='Curl for products')
 	s.send("istioctl proxy-config routes $(kubectl get pod | grep ingress | cut -d ' ' -f 1)",note='Get routes from proxy config')
 
 	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istioinaction',note='Back to istioinaction')
@@ -46,7 +48,7 @@ def do_istioinaction(s):
 	s.send('kubectl get virtualservice',note='Get virtual service')
 	# Generate some traffic
 	for _ in []*5:
-		s.send('do curl $URL/api/products; sleep .5; done')
+		s.send('do curl ' + URL + '/api/products; sleep .5; done')
 	# Grafana
 	s.send('sleep 60')
 	s.send('''GRAFANA=$(kubectl -n istio-system get pod | grep -i running | grep grafana | cut -d ' ' -f 1)''',note='Get grafana pod')
@@ -60,22 +62,22 @@ def do_istioinaction(s):
 	s.send('''kubectl port-forward -n istio-system "${TRACING}" ''' + random_port + ''':16686 &''',note='Forward port from tracing service:16686 to random port')
 	#s.pause_point('now go to localhost:' + random_port)
 	# Generate a failure
-	s.send('''curl ${URL}/api/products -H "failure-percentage: 100"''',note='Induce a failure in lookup')
+	s.send('curl ' + URL + '/api/products -H "failure-percentage: 100"',note='Induce a failure in lookup')
 	s.send('''kubectl create -f chapter-files/chapter2/catalog-virtualservice.yaml''',note='Set up ingress gateway')
 	# Generate traffic
 	for _ in []*10:
-		s.send('''curl $URL/api/products -H "failure-percentage: 50"''')
+		s.send('curl ' + URL + '/api/products -H "failure-percentage: 50"')
 	s.send('kubectl create -f <(istioctl kube-inject -f ./install/catalog-v2-service/catalog-v2-deployment.yaml)',note='Create an istio-d catalog v2')
 	s.send('kubectl create -f chapter-files/chapter2/catalog-destinationrule.yaml',note='Set up destination rule')
 	s.send('kubectl apply -f chapter-files/chapter2/catalog-virtualservice-all-v1.yaml',note='Set up virtualservice')
 	# v1 responses only now
 	for _ in []*5:
-		s.send('''curl $URL/api/products''')
+		s.send('curl ' + URL + '/api/products')
 	s.send('kubectl apply -f chapter-files/chapter2/catalog-virtualservice-dark-v2.yaml',note='Create version 2 of the service, only available through dark launch')
 	for _ in []*5:
-		s.send('''curl $URL/api/products''')
+		s.send('curl ' + URL + '/api/products')
 	# Call 'dark launch'
-	s.send('curl $URL/api/products -H "x-dark-launch: v2"',note='Get dark launch')
+	s.send('curl ' + URL + '/api/products -H "x-dark-launch: v2"',note='Get dark launch')
 	s.send('kill %1')
 	s.send('kill %2')
 	s.send('''eval $(minikube docker-env)''',note='Move to docker environment and then pull images')
@@ -149,12 +151,12 @@ def do_istioinaction(s):
 	s.send('kubectl get pod',note='should see two pods ready')
 	s.send('kubectl get gateway',note='check gateway exists')
 	s.send('kubectl get virtualservice',note='check virtualservice exists')
-	s.send('HTTP_HOST=$(minikube ip)')
-	s.send('''HTTP_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')''')
-	s.send('URL=$HTTP_HOST:$HTTP_PORT')
-	s.send('curl $URL/api/products',note='Should fail')
+	HTTP_HOST = s.send_and_get_output('minikube ip')
+	HTTP_PORT = s.send_and_get_output("""kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}'""")
+	URL = HTTP_HOST + ':' + HTTP_PORT
+	s.send('curl ' + URL + '/api/products',note='Should fail')
 	# p.110
-	s.send('curl $URL/api/products -H "Host: apiserver.istioinaction.io"',note='Overriding the host should work')
+	s.send('curl ' + URL + '/api/products -H "Host: apiserver.istioinaction.io"',note='Overriding the host should work')
 	# Securing (p.112)
 	# Istio's gateway implementation allows us to terminate incoming TLS/SSL traffic
 		# pass it through to the backend services,
@@ -163,8 +165,7 @@ def do_istioinaction(s):
 	s.send('kubectl create -n istio-system secret tls istio-ingressgateway-certs --key chapter-files/chapter4/certs/3_application/private/apiserver.istioinaction.io.key.pem --cert chapter-files/chapter4/certs/3_application/certs/apiserver.istioinaction.io.cert.pem',note='Start by creating the istio-ingressgateway-certs secret')
 	s.send('kubectl replace -f chapter-files/chapter4/coolstore-gw-tls.yaml',note='configure the gateway to use these certs/secrets')
 	s.send('kubectl replace -f chapter-files/chapter4/coolstore-gw-tls.yaml',note='replace gateway with new gateway resource')
-	s.send('HTTPS_HOST=$(minikube ip)',note='Get minikube IP')
-	s.send("""HTTPS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}'""",note='Get https port for ingressgateway service')
-	s.send('URL="$HTTPS_HOST:$HTTPS_PORT"',note='Construct URL')
-	s.send('curl -v -H "Host: apiserver.istioinaction.io" https://$URL/api/products',note='Should fail?')
+	HTTPS_PORT = s.send_and_get_output("""kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}'""",note='Get https port for ingressgateway service')
+	URL = HTTP_HOST + ':' + HTTP_PORT
+	s.send('curl -v -H "Host: apiserver.istioinaction.io" https://' + URL + '/api/products',note='Should fail?')
 	s.pause_point('doing ch4')
