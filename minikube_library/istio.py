@@ -20,118 +20,94 @@ def do_istio(s, version):
 
 def do_istioinaction(s):
 	# Create istioinaction namespace
-	s.send('kubectl create namespace istioinaction')
-	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istioinaction')
+	s.send('kubectl create namespace istioinaction',note'Create namespace')
+	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istioinaction',note='Update kubectl context')
 	s.send('cd ../book-source-code')
-	# Deploy catalog app
-	s.send('kubectl create -f <(istioctl kube-inject -f install/catalog-service/catalog-all.yaml)')
+	s.send('kubectl create -f <(istioctl kube-inject -f install/catalog-service/catalog-all.yaml)',note='Deploy catalog app')
 	s.send_until('kubectl get pod | grep catalog | wc -l','1')
 	s.send_until('kubectl get pod | grep catalog | grep -v ^NAME | grep -v Running | grep -v Completed | wc -l','0', cadence=20)
 	s.send('sleep 60')
-	s.send("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl --command -- sh -c 'curl -s catalog:8080/api/catalog'")
-	# Deploy API gateway service
-	s.send('kubectl create -f <(istioctl kube-inject -f install/apigateway-service/apigateway-all.yaml)')
+	s.send("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl --command -- sh -c 'curl -s catalog:8080/api/catalog'",note='Now catalog is up, curl it')
+	s.send('kubectl create -f <(istioctl kube-inject -f install/apigateway-service/apigateway-all.yaml)',note='Deploy API gateway service')
 	s.send_until('kubectl get pod | grep apigateway | wc -l','1')
 	s.send_until('kubectl get pod | grep apigateway | grep -v ^NAME | grep -v Running | grep -v Completed | wc -l','0', cadence=20)
 	s.send('sleep 60')
-	s.send("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl --command -- sh -c 'curl -s apigateway:8080/api/products'")
+	s.send("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl --command -- sh -c 'curl -s apigateway:8080/api/products'",note='curl apigateway')
 
 	# Ingress gateway in istio-system
-	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istio-system')
-	s.send('kubectl create -f chapter-files/chapter2/ingress-gateway.yaml')
-	s.send("""URL=$(minikube ip):$(kubectl get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')""")
-	s.send('curl ${URL}/api/products')
-	# Debug
-	s.send("istioctl proxy-config routes $(kubectl get pod | grep ingress | cut -d ' ' -f 1)")
+	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istio-system',note='Change to istio system namespace')
+	s.send('kubectl create -f chapter-files/chapter2/ingress-gateway.yaml',note='Create ingress gateway')
+	s.send("""URL=$(minikube ip):$(kubectl get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')""",note='Construct ingress gateway URL')
+	s.send('curl ${URL}/api/products',note='Curl for products')
+	s.send("istioctl proxy-config routes $(kubectl get pod | grep ingress | cut -d ' ' -f 1)",note='Get routes from proxy config')
 
-	# Back to istioinaction
-	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istioinaction')
-	s.send('kubectl get gateway')
-	s.send('kubectl get virtualservice')
+	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istioinaction',note='Back to istioinaction')
+	s.send('kubectl get gateway',note='Show gateway')
+	s.send('kubectl get virtualservice',note='Get virtual service')
 	# Generate some traffic
 	for _ in []*5:
 		s.send('do curl $URL/api/products; sleep .5; done')
 	# Grafana
 	s.send('sleep 60')
-	s.send('''kubectl -n istio-system get pod | grep -i running | grep grafana | cut -d ' ' -f 1''')
-	s.send('''GRAFANA=$(kubectl -n istio-system get pod | grep -i running | grep grafana | cut -d ' ' -f 1)''')
+	s.send('''GRAFANA=$(kubectl -n istio-system get pod | grep -i running | grep grafana | cut -d ' ' -f 1)''',note='Get grafana pod')
 	random_port = str(random.randrange(49152,65535))
-	s.send('''kubectl port-forward -n istio-system "${GRAFANA}" ''' + random_port + ''':3000 &''')
+	s.send('''kubectl port-forward -n istio-system "${GRAFANA}" ''' + random_port + ''':3000 &''',note='Forward port from grafana:3000 to a random port')
 	#s.pause_point('now go to localhost:' + random_port)
 	# Jaeger tracing
 	s.send('sleep 60')
-	s.send('''kubectl -n istio-system get pod | grep istio-tracing | cut -d ' ' -f 1''')
-	s.send('''TRACING=$(kubectl -n istio-system get pod | grep istio-tracing | cut -d ' ' -f 1)''')
+	s.send('''TRACING=$(kubectl -n istio-system get pod | grep istio-tracing | cut -d ' ' -f 1)''',note='Get tracing pod')
 	random_port = str(random.randrange(49152,65535))
-	s.send('''kubectl port-forward -n istio-system "${TRACING}" ''' + random_port + ''':16686 &''')
+	s.send('''kubectl port-forward -n istio-system "${TRACING}" ''' + random_port + ''':16686 &''',note='Forward port from tracing service:16686 to random port')
 	#s.pause_point('now go to localhost:' + random_port)
 	# Generate a failure
-	s.send('''curl ${URL}/api/products -H "failure-percentage: 100"''')
-	# Ingress gateway
-	s.send('''kubectl create -f chapter-files/chapter2/catalog-virtualservice.yaml''')
+	s.send('''curl ${URL}/api/products -H "failure-percentage: 100"'''.note='Induce a failure in lookup')
+	s.send('''kubectl create -f chapter-files/chapter2/catalog-virtualservice.yaml''',note='Set up ingress gateway')
 	# Generate traffic
 	for _ in []*10:
 		s.send('''curl $URL/api/products -H "failure-percentage: 50"''')
-	s.send('kubectl create -f <(istioctl kube-inject -f ./install/catalog-v2-service/catalog-v2-deployment.yaml)')
-	s.send('kubectl create -f chapter-files/chapter2/catalog-destinationrule.yaml')
-	s.send('kubectl apply -f chapter-files/chapter2/catalog-virtualservice-all-v1.yaml')
+	s.send('kubectl create -f <(istioctl kube-inject -f ./install/catalog-v2-service/catalog-v2-deployment.yaml)',note='Create an istio-d catalog v2')
+	s.send('kubectl create -f chapter-files/chapter2/catalog-destinationrule.yaml',note='Set up destination rule')
+	s.send('kubectl apply -f chapter-files/chapter2/catalog-virtualservice-all-v1.yaml',note='Set up virtualservice')
 	# v1 responses only now
 	for _ in []*5:
 		s.send('''curl $URL/api/products''')
-	# Create version 2 of the service, only available through dark launch.
-	s.send('kubectl apply -f chapter-files/chapter2/catalog-virtualservice-dark-v2.yaml')
+	s.send('kubectl apply -f chapter-files/chapter2/catalog-virtualservice-dark-v2.yaml',note='Create version 2 of the service, only available through dark launch')
 	for _ in []*5:
 		s.send('''curl $URL/api/products''')
 	# Call 'dark launch'
-	s.send('curl $URL/api/products -H "x-dark-launch: v2"')
+	s.send('curl $URL/api/products -H "x-dark-launch: v2"',note='Get dark launch')
 	s.send('kill %1')
 	s.send('kill %2')
-	s.send('''eval $(minikube docker-env)''')
+	s.send('''eval $(minikube docker-env)''',note='Move to docker environment and then pull images')
 	s.send('docker ps')
 	s.send('docker pull istioinaction/envoy:v1.7.0')
 	s.send('docker pull tutum/curl')
 	s.send('docker pull citizenstig/httpbin')
 	s.send('docker run -d --name httpbin citizenstig/httpbin')
-	s.send('docker run -it --rm --link httpbin tutum/curl curl -X GET http://httpbin:8000/headers')
-	# Show envy help
-	s.send('docker run -it --rm istioinaction/envoy:v1.7.0 envoy --help')
-	# Run envoy with no config (will fail)
-	s.send('docker run -it --rm istioinaction/envoy:v1.7.0 envoy || true')
-	s.send('docker run -i --rm --entrypoint "cat" istioinaction/envoy:v1.7.0 /etc/envoy/simple.yaml')
-	# Run sith a simple config (cat'd above)
-	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple.yaml')
-	s.send('docker logs proxy')
-	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/headers')
-	# Delete proxy
-	s.send('docker rm -f proxy')
-	# Show diff between last config and new one
-	s.send('docker run -i --rm --link httpbin --entrypoint diff istioinaction/envoy:v1.7.0 /etc/envoy/simple.yaml /etc/envoy/simple_change_timeout.yaml')
-	# Run again, but change timeout (different config)
-	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple_change_timeout.yaml')
-	# Get headers
-	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/headers')
-	# Get stats
-	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats')
-	# Too much crap - now grep for retry
-	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats | grep retry')
-	# Get list of endpoints - explore!
-	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/')
-	# Delete proxy
-	s.send('docker rm -f proxy')
-	# Run again, but change retry policy
-	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple_retry.yaml')
-	# create a 500 error by calling /status/500
-	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/status/500')
-	# what happened?
-	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats | grep retry')
+	s.send('docker run -it --rm --link httpbin tutum/curl curl -X GET http://httpbin:8000/headers',note='Look at httpbin:8000 headers')
+	s.send('docker run -it --rm istioinaction/envoy:v1.7.0 envoy --help',note='Show envoy help')
+	s.send('docker run -it --rm istioinaction/envoy:v1.7.0 envoy || true',note='Run envoy with no config (will fail)')
+	s.send('docker run -i --rm --entrypoint "cat" istioinaction/envoy:v1.7.0 /etc/envoy/simple.yaml',note='Run sith a simple config (cat-ed above)')
+	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple.yaml',note='Run envoy with a simple proxy config')
+	s.send('docker logs proxy',note='Look at envoy logs')
+	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/headers',note='Look at proxy:15001 headers')
+	s.send('docker rm -f proxy',note='Delete proxy')
+	s.send('docker run -i --rm --link httpbin --entrypoint diff istioinaction/envoy:v1.7.0 /etc/envoy/simple.yaml /etc/envoy/simple_change_timeout.yaml',note='Show diff between last config and new one')
+	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple_change_timeout.yaml',note='Run again, but change timeout (different config)')
+	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/headers',note='Get headers')
+	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats',note='Get stats')
+	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats | grep retry',note='Too much crap - now grep for retry')
+	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/',note='Get list of endpoints - explore!')
+	s.send('docker rm -f proxy',note='Delete proxy')
+	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple_retry.yaml',note='un again, but change retry policy')
+	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/status/500',note='create a 500 error by calling /status/500')
+	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats | grep retry',note='what happened?')
 	# CHAPTER 4
-	s.send('INGRESS_POD=$(kubectl get pod -n istio-system | grep ingressgateway | cut -d ' ' -f 1)')
-	s.send('kubectl -n istio-system exec $INGRESS_POD ps aux')
-	s.send('kubectl create -f chapter-files/chapter4/coolstore-gw.yaml')
-	# Expect to see a listener on 0.0.0.0:80 of type HTTP
-	s.send('istioctl proxy-config listener $INGRESS_POD -n istio-system')
-	# View the route in json. Start by matching everything to 404
-	s.send('istioctl proxy-config route $INGRESS_POD -n istio-system')
+	s.send('INGRESS_POD=$(kubectl get pod -n istio-system | grep ingressgateway | cut -d ' ' -f 1)',note='Get ingress gateway pod')
+	s.send('kubectl -n istio-system exec $INGRESS_POD ps aux',note='Show processes running within gateway pod')
+	s.send('kubectl create -f chapter-files/chapter4/coolstore-gw.yaml',note='Create coolstore gateway')
+	s.send('istioctl proxy-config listener $INGRESS_POD -n istio-system',note='Expect to see a listener on 0.0.0.0:80 of type HTTP')
+	s.send('istioctl proxy-config route $INGRESS_POD -n istio-system',note='View the route in json. Start by matching everything to 404')
 #[
 # {
 # "name": "http.80",
@@ -180,11 +156,15 @@ def do_istioinaction(s):
 	# p.110
 	s.send('curl $URL/api/products -H "Host: apiserver.istioinaction.io"',note='Overriding the host should work')
 	# Securing (p.112)
-	# Istio’s gateway implementation allows us to terminate incoming TLS/SSL traffic
+	# Istio's gateway implementation allows us to terminate incoming TLS/SSL traffic
 		# pass it through to the backend services,
 		# redirect any non-TLS traffic to the proper TLS ports as well as
-		# implement mutual TLS.
+		# implement mutual TLS.
 	s.send('kubectl create -n istio-system secret tls istio-ingressgateway-certs --key chapter-files/chapter4/certs/3_application/private/apiserver.istioinaction.io.key.pem --cert chapter-files/chapter4/certs/3_application/certs/apiserver.istioinaction.io.cert.pem',note='Start by creating the istio-ingressgateway-certs secret')
 	s.send('kubectl replace -f chapter-files/chapter4/coolstore-gw-tls.yaml',note='configure the gateway to use these certs/secrets')
-	TODO: p.115 - add notes throughout above.
+	s.send('kubectl replace -f chapter-files/chapter4/coolstore-gw-tls.yaml',note='replace gateway with new gateway resource')
+	s.send('HTTPS_HOST=$(minikube ip)',note='Get minikube IP')
+	s.send('''HTTPS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}''',note='Get https port for ingressgateway service')
+	s.send('URL="$HTTPS_HOST:$HTTPS_PORT"',note='Construct URL')
+	s.send('curl -v -H "Host: apiserver.istioinaction.io" https://$URL/api/products',note='Should fail?')
 	s.pause_point('doing ch4')
