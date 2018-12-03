@@ -21,70 +21,96 @@ def do_istio(s, version):
 
 # Istio in Action book
 def do_istioinaction(s):
-
+	s.send('cd ../book-source-code')
+	# Deploy first app in service mesh.
+	#p.53
 	s.send('kubectl create namespace istioinaction',note='Create istioinaction namespace')
 	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istioinaction',note='Update kubectl context')
-	s.send('cd ../book-source-code')
+	#p.56
 	s.send('kubectl create -f <(istioctl kube-inject -f install/catalog-service/catalog-all.yaml)',note='Deploy catalog app')
 	s.send_until('kubectl get pod | grep catalog | wc -l','1')
 	s.send_until('kubectl get pod | grep catalog | grep -v ^NAME | grep -v Running | grep -v Completed | wc -l','0', cadence=20)
 	s.send('sleep 60')
 	s.send("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl --command -- sh -c 'curl -s catalog:8080/api/catalog'",note='Now catalog is up, curl it')
+	#p.57
 	s.send('kubectl create -f <(istioctl kube-inject -f install/apigateway-service/apigateway-all.yaml)',note='Deploy API gateway service')
 	s.send_until('kubectl get pod | grep apigateway | wc -l','1')
 	s.send_until('kubectl get pod | grep apigateway | grep -v ^NAME | grep -v Running | grep -v Completed | wc -l','0', cadence=20)
 	s.send('sleep 60')
 	s.send("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl --command -- sh -c 'curl -s apigateway:8080/api/products'",note='curl apigateway')
 
+	# 2.4 Exploring... resilience observability and traffic control
 	# Ingress gateway in istio-system
+	#p.58
 	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istio-system',note='Change to istio system namespace')
 	s.send('kubectl create -f chapter-files/chapter2/ingress-gateway.yaml',note='Create ingress gateway')
 	URL = s.send_and_get_output("""$(minikube ip):$(kubectl get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')""",note='Construct ingress gateway URL')
 	s.send('curl ' + URL + '/api/products',note='Curl for products')
+	#p.59
 	s.send("istioctl proxy-config routes $(kubectl get pod | grep ingress | cut -d ' ' -f 1)",note='Get routes from proxy config')
-
 	s.send('kubectl config set-context $(kubectl config current-context) --namespace=istioinaction',note='Back to istioinaction')
 	s.send('kubectl get gateway',note='Show gateway')
 	s.send('kubectl get virtualservice',note='Get virtual service')
+
+	# 2.4.1 Istio observability
 	# Generate some traffic
 	for _ in []*5:
 		s.send('do curl ' + URL + '/api/products; sleep .5; done')
 	# Grafana
 	s.send('sleep 60')
+	# p.60
 	GRAFANA = s.send_and_get_output('''kubectl -n istio-system get pod | grep -i running | grep grafana | cut -d ' ' -f 1''',note='Get grafana pod')
 	random_port = str(random.randrange(49152,65535))
 	s.send('''kubectl port-forward -n istio-system "''' + GRAFANA + '''" ''' + random_port + ''':3000 &''',note='Forward port from grafana:3000 to a random port')
 	#s.pause_point('now go to localhost:' + random_port)
 	# Jaeger tracing
 	s.send('sleep 60')
+	# p.63
 	TRACING = s.send_and_get_output('''kubectl -n istio-system get pod | grep istio-tracing | cut -d ' ' -f 1''',note='Get tracing pod')
 	random_port = str(random.randrange(49152,65535))
 	s.send('''kubectl port-forward -n istio-system "''' + TRACING + '''" ''' + random_port + ''':16686 &''',note='Forward port from tracing service:16686 to random port')
+	# Generate some traffic
+	for _ in []*5:
+		s.send('do curl ' + URL + '/api/products; sleep .5; done')
 	#s.pause_point('now go to localhost:' + random_port)
+	# 2.4.2 Istio for resiliency
 	# Generate a failure
+	# p.67
 	s.send('curl ' + URL + '/api/products -H "failure-percentage: 100"',note='Induce a failure in lookup')
+
+	# 2.4.3 Istio for traffic routing
+	# p.68
 	s.send('''kubectl create -f chapter-files/chapter2/catalog-virtualservice.yaml''',note='Set up ingress gateway')
 	# Generate traffic
 	for _ in []*10:
 		s.send('curl ' + URL + '/api/products -H "failure-percentage: 50"')
+	# p.70
 	s.send('kubectl create -f <(istioctl kube-inject -f ./install/catalog-v2-service/catalog-v2-deployment.yaml)',note='Create an istio-d catalog v2')
 	s.send('kubectl create -f chapter-files/chapter2/catalog-destinationrule.yaml',note='Set up destination rule')
+	# p.71
 	s.send('kubectl apply -f chapter-files/chapter2/catalog-virtualservice-all-v1.yaml',note='Set up virtualservice')
 	# v1 responses only now
 	for _ in []*5:
 		s.send('curl ' + URL + '/api/products')
+	# p.72
 	s.send('kubectl apply -f chapter-files/chapter2/catalog-virtualservice-dark-v2.yaml',note='Create version 2 of the service, only available through dark launch')
 	for _ in []*5:
 		s.send('curl ' + URL + '/api/products')
 	# Call 'dark launch'
-	s.send('curl ' + URL + '/api/products -H "x-dark-launch: v2"',note='Get dark launch')
+	s.send('curl ' + URL + '/api/products -H "x-dark-launch: v2"',note='Get dark launch, expect bunch of json')
 	s.send('kill %1')
 	s.send('kill %2')
+
+	# CHAPTER 3
+	# 3.3 Envoy in action
+	# p.87
 	s.send('''eval $(minikube docker-env)''',note='Move to docker environment and then pull images')
 	s.send('docker ps')
 	s.send('docker pull istioinaction/envoy:v1.7.0')
 	s.send('docker pull tutum/curl')
 	s.send('docker pull citizenstig/httpbin')
+	# p.88
+	TODO annotate from here.
 	s.send('docker run -d --name httpbin citizenstig/httpbin')
 	s.send('docker run -it --rm --link httpbin tutum/curl curl -X GET http://httpbin:8000/headers',note='Look at httpbin:8000 headers')
 	s.send('docker run -it --rm istioinaction/envoy:v1.7.0 envoy --help',note='Show envoy help')
@@ -190,4 +216,7 @@ def do_istioinaction(s):
 	s.send('kubectl create -f chapter-files/chapter4/gateway-tcp.yaml',note='Expose port 31400 on default istio-ingressgateway, and expose as NodePort on 31400')
 	# p.125 -
 	s.send('kubectl create -f chapter-files/chapter4/echo-vs.yaml',note='Now port is exposed on the ingress gateway, route traffic to the echo service')
-	s.pause_point('doing ch4')
+	TCP_PORT = s.send_and_get_output("kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="tcp")].nodePort}'",note='Get tcp port from gateway spec')
+	s.pause_point('telnet $(minikube ip) ' + TCP_PORT,note='connect to tcp service')
+	# 4.4.2 - traffic routing with SNI and TLS - TODO
+	s.pause_point('done ch4')
