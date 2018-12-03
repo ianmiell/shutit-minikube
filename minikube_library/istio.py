@@ -51,15 +51,15 @@ def do_istioinaction(s):
 		s.send('do curl ' + URL + '/api/products; sleep .5; done')
 	# Grafana
 	s.send('sleep 60')
-	s.send('''GRAFANA=$(kubectl -n istio-system get pod | grep -i running | grep grafana | cut -d ' ' -f 1)''',note='Get grafana pod')
+	GRAFANA = s.send_and_get_output('''kubectl -n istio-system get pod | grep -i running | grep grafana | cut -d ' ' -f 1''',note='Get grafana pod')
 	random_port = str(random.randrange(49152,65535))
-	s.send('''kubectl port-forward -n istio-system "${GRAFANA}" ''' + random_port + ''':3000 &''',note='Forward port from grafana:3000 to a random port')
+	s.send('''kubectl port-forward -n istio-system "''' + GRAFANA + '''" ''' + random_port + ''':3000 &''',note='Forward port from grafana:3000 to a random port')
 	#s.pause_point('now go to localhost:' + random_port)
 	# Jaeger tracing
 	s.send('sleep 60')
-	s.send('''TRACING=$(kubectl -n istio-system get pod | grep istio-tracing | cut -d ' ' -f 1)''',note='Get tracing pod')
+	TRACING = s.send_and_get_output('''kubectl -n istio-system get pod | grep istio-tracing | cut -d ' ' -f 1''',note='Get tracing pod')
 	random_port = str(random.randrange(49152,65535))
-	s.send('''kubectl port-forward -n istio-system "${TRACING}" ''' + random_port + ''':16686 &''',note='Forward port from tracing service:16686 to random port')
+	s.send('''kubectl port-forward -n istio-system "''' + TRACING + '''" ''' + random_port + ''':16686 &''',note='Forward port from tracing service:16686 to random port')
 	#s.pause_point('now go to localhost:' + random_port)
 	# Generate a failure
 	s.send('curl ' + URL + '/api/products -H "failure-percentage: 100"',note='Induce a failure in lookup')
@@ -105,11 +105,11 @@ def do_istioinaction(s):
 	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/status/500',note='create a 500 error by calling /status/500')
 	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats | grep retry',note='what happened?')
 	# CHAPTER 4
-	s.send('INGRESS_POD=$(kubectl get pod -n istio-system | grep ingressgateway | cut -d ' ' -f 1)',note='Get ingress gateway pod')
-	s.send('kubectl -n istio-system exec $INGRESS_POD ps aux',note='Show processes running within gateway pod')
+	INGRESS_POD = s.send_and_get_output('kubectl get pod -n istio-system | grep ingressgateway | cut -d ' ' -f 1',note='Get ingress gateway pod')
+	s.send('kubectl -n istio-system exec ' + INGRESS_POD + ' ps aux',note='Show processes running within gateway pod')
 	s.send('kubectl create -f chapter-files/chapter4/coolstore-gw.yaml',note='Create coolstore gateway')
-	s.send('istioctl proxy-config listener $INGRESS_POD -n istio-system',note='Expect to see a listener on 0.0.0.0:80 of type HTTP')
-	s.send('istioctl proxy-config route $INGRESS_POD -n istio-system',note='View the route in json. Start by matching everything to 404')
+	s.send('istioctl proxy-config listener ' + INGRESS_POD + ' -n istio-system',note='Expect to see a listener on 0.0.0.0:80 of type HTTP')
+	s.send('istioctl proxy-config route ' + INGRESS_POD + ' -n istio-system',note='View the route in json. Start by matching everything to 404')
 #[
 # {
 # "name": "http.80",
@@ -166,22 +166,28 @@ def do_istioinaction(s):
 	s.send('kubectl replace -f chapter-files/chapter4/coolstore-gw-tls.yaml',note='configure the gateway to use these certs/secrets')
 	s.send('kubectl replace -f chapter-files/chapter4/coolstore-gw-tls.yaml',note='replace gateway with new gateway resource')
 	HTTPS_PORT = s.send_and_get_output("""kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}'""",note='Get https port for ingressgateway service')
-	s.send("""HTTPS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}'""",note='Get https port for ingressgateway service')
 	URL = HTTP_HOST + ':' + HTTP_PORT
 	s.send('curl -v -H "Host: apiserver.istioinaction.io" https://' + URL + '/api/products',note='Should fail, as no cert')
 	s.send('curl -v -H "Host: apiserver.istioinaction.io" https://' + URL + '/api/products --cacert chapter-files/chapter4/certs/2_intermediate/certs/ca-chain.cert.pem',note='Will stil fail because host is wrong')
-	s.send('curl -H "Host: apiserver.istioinaction.io" https://apiserver.istioinaction.io:$HTTPS_PORT/api/products --cacert chapter-files/chapter4/certs/2_intermediate/certs/ca-chain.cert.pem --resolve apiserver.istioinaction.io:$HTTPS_PORT:$HTTPS_HOST',note='Now should see a 200 OK')
+	s.send('curl -H "Host: apiserver.istioinaction.io" https://apiserver.istioinaction.io:' + HTTPS_PORT + '/api/products --cacert chapter-files/chapter4/certs/2_intermediate/certs/ca-chain.cert.pem --resolve apiserver.istioinaction.io:' + HTTPS_PORT + ':' + HTTPS_HOST,note='Now should see a 200 OK')
 	s.send('kubectl replace -f chapter-files/chapter4/coolstore-gw-tls-redirect.yaml',note='Redirect http to https')
 	s.send("""curl -v $(minikube ip):$(kubectl -n istio-system get service istio-ingressway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')/api/products -H "Host: apiserver.istioinaction.io" """,note='Call ingress gateway on http port, should get a 301 redirect to https.')
 	s.send('kubectl create -n istio-system secret generic istio-ingressgateway-ca-certs --from-file=chapter-files/chapter4/certs/2_intermediate/certs/ca-chain.cert.pem',note='Now doing mtls, set up ca certs secrets')
 	s.send('kubectl replace -f chapter-files/chapter4/coolstore-gw-mtls.yaml',note='mTLS gateway config')
-	s.send('curl -H "Host: apiserver.istioinaction.io" https://apiserver.istioinaction.io:$HTTPS_PORT/api/products --cacert chapter-files/chapter4/certs/2_intermediate/certs/ca-chain.cert.pem --resolve apiserver.istioinaction.io:$HTTPS_PORT:$HTTPS_HOST',note='Same call as before should be rejected, as we are only passing the CA cert chain to the curl command. Need to pass the client cert and private key with the --cert and --key parameters as per next command')
-	s.send('curl -H "Host: apiserver.istioinaction.io" https://apiserver.istioinaction.io:$HTTPS_PORT/api/products --cacert chapter-files/chapter4/certs/2_intermediate/certs/ca-chain.cert.pem --resolve apiserver.istioinaction.io:$HTTPS_PORT:$HTTPS_HOST --cert chapter-files/chapter4/certs/4_client/certs/apiserver.istioinaction.io.cert.pem --key chapter-files/chapter4/certs/4_client/private/apiserver.istioinaction.io.key.pem',note='should see a 200 and JSON')
+	s.send('curl -H "Host: apiserver.istioinaction.io" https://apiserver.istioinaction.io:' + HTTPS_PORT + '/api/products --cacert chapter-files/chapter4/certs/2_intermediate/certs/ca-chain.cert.pem --resolve apiserver.istioinaction.io:' + HTTPS_PORT + ':' + HTTPS_HOST,note='Same call as before should be rejected, as we are only passing the CA cert chain to the curl command. Need to pass the client cert and private key with the --cert and --key parameters as per next command')
+	# p.122
+	s.send('curl -H "Host: apiserver.istioinaction.io" https://apiserver.istioinaction.io:' + HTTPS_PORT + '/api/products --cacert chapter-files/chapter4/certs/2_intermediate/certs/ca-chain.cert.pem --resolve apiserver.istioinaction.io:' + HTTPS_PORT + ':' + HTTPS_HOST + ' --cert chapter-files/chapter4/certs/4_client/certs/apiserver.istioinaction.io.cert.pem --key chapter-files/chapter4/certs/4_client/private/apiserver.istioinaction.io.key.pem',note='should see a 200 and JSON')
 	# 4.3.4 Serving multuiple virtual hosts with TLS
 	s.send('kubectl create -n istio-system secret tls catalog-ingressgateway-certs --key chapter-files/chapter4/certs2/3_application/private/catalog.istioinaction.io.key.pem --cert chapter-files/chapter4/certs2/3_application/certs/catalog.istioinaction.io.cert.pem',note="Create extra certs and keys for the multiple virtual hosts")
 	s.send('kubectl replace -f chapter-files/chapter4/istio-ingressgateway-deployment-catalog-certs.yaml',note='Create gateway for multiple tls certs')
 	s.send('kubectl replace -f chapter-files/chapter4/coolstore-gw-multi-tls.yaml',note='Update gateway configuration')
 	s.send('kubectl replace -f chapter-files/chapter4/catalog-vs.yaml',note='Add catalog virtual service')
-
->>>>>>> latest
+	s.send('curl -H "Host: apiserver.istioinaction.io" https://apiserver.istioinaction.io:' + HTTPS_PORT + '/api/products --cacert chapter-files/chapter4/certs/2_intermediate/certs/ca-chain.cert.pem --resolve apiserver.istioinaction.io:' + HTTPS_PORT + ':' + HTTPS_HOST,note='This call should work as per the simple TLS section')
+	s.send('curl -H "Host: catalog.istioinaction.io" https://catalog.istioinaction.io:' + HTTPS_PORT + '/api/catalog --cacert chapter-files/chapter4/certs2/2_intermediate/certs/ca-chain.cert.pem --resolve catalog.istioinaction.io:' + HTTPS_PORT + ':' + HTTPS_HOST,note='Should also work - uses SNI to know which cert to present to which client')
+	# p.123 - TCP traffic
+	s.send('kubectl create -f <(istioctl kube-inject -f chapter-files/chapter4/echo.yaml)',note='Create simple TCP echo service from https://github.com/cjimti/go-echo/')
+	# p.124 -
+	s.send('kubectl create -f chapter-files/chapter4/gateway-tcp.yaml',note='Expose port 31400 on default istio-ingressgateway, and expose as NodePort on 31400')
+	# p.125 -
+	s.send('kubectl create -f chapter-files/chapter4/echo-vs.yaml',note='Now port is exposed on the ingress gateway, route traffic to the echo service')
 	s.pause_point('doing ch4')
