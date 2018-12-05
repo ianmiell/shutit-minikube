@@ -13,7 +13,7 @@ def do_admission_controller(s):
 	s.pause_point('docker login')
 	s.send('make && make push',note='load it up(?)')
 	s.send('kubectl apply -f ns.yaml',note='Make the namespace')
-	s.send('./gen-cert.sh',r'''Generate the certs. Aside from the openssl work, the
+	s.send('./gen-cert.sh',note=r'''Generate the certs. Aside from the openssl work, the
 kubectl commands used are:
 # delete any previous certificate signing requests
 kubectl delete csr ${csrName} 2>/dev/null || true
@@ -68,8 +68,8 @@ webhooks:
     namespaceSelector:
       matchLabels:
         mwc-example: enabled""")
-	s.send('kubectl apply -f manifest-ca.yaml')
-	s.send('kubectl apply -f test.yaml')
+	s.send('kubectl apply -f manifest-ca.yaml',note='deploy the created manifest.yaml')
+	s.send('kubectl apply -f test.yaml',note='Now deploy the test.yaml - Which if you inspect you will see the namespace has a label - mwc-enable: enabled')
 	s.send('kubectl get pods -n mwc-test -o json | jq .items[0].metadata.labels')
 	s.pause_point('play')
 
