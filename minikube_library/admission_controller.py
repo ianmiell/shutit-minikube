@@ -11,12 +11,9 @@ def do_admission_controller(s):
 	#s.send('make minikube',note='make the container')
 	s.send('eval $(minikube docker-env)')
 	s.pause_point('docker login')
-	s.send('make && makepush',note='load it up(?)')
-	# No need to push as it's to another user's docker repo
-	#s.send('make push')
-	# TODO: annotate based on webhook basics above
+	s.send('make && make push',note='load it up(?)')
 	s.send('kubectl apply -f ns.yaml',note='Make the namespace')
-	s.send('./gen-cert.sh','''Generate the certs. Aside from the openssl work, the
+	s.send('./gen-cert.sh',r'''Generate the certs. Aside from the openssl work, the
 kubectl commands used are:
 # delete any previous certificate signing requests
 kubectl delete csr ${csrName} 2>/dev/null || true
@@ -74,7 +71,7 @@ webhooks:
 	s.send('kubectl apply -f manifest-ca.yaml')
 	s.send('kubectl apply -f test.yaml')
 	s.send('kubectl get pods -n mwc-test -o json | jq .items[0].metadata.labels')
-	s.pause_point('annotate')
+	s.pause_point('play')
 
 
 #https://medium.com/ibm-cloud/diving-into-kubernetes-mutatingadmissionwebhook-6ef3c5695f74
