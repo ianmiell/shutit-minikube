@@ -11,13 +11,14 @@ def do_admission_controller(s):
 	# No need to push as it's to another user's docker repo
 	#s.send('make push')
 	# TODO: annotate based on webhook basics above
+	s.pause_point('annotate')
 	s.send('kubectl apply -f ns.yaml')
 	s.send('./gen-cert.sh')
 	s.send('./ca-bundle.sh')
 	s.send('kubectl apply -f manifest-ca.yaml')
 	s.send('kubectl apply -f test.yaml')
 	s.send('kubectl get pods -n mwc-test -o json | jq .items[0].metadata.labels')
-	s.pause_point()
+	s.pause_point('annotate')
 
 
 #https://medium.com/ibm-cloud/diving-into-kubernetes-mutatingadmissionwebhook-6ef3c5695f74
