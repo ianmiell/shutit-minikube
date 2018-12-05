@@ -6,6 +6,8 @@ def do_admission_controller(s):
 	s.send('cd ~/minikube_tmp/admission_controlller')
 	s.send('git clone https://github.com/jasonrichardsmith/mwcexample')
 	s.send('cd mwcexample')
+	s.send('''sed -i 's/jasonrichardsmith/imiell/' Makefile''')
+	s.send('''sed -i 's/jasonrichardsmith/imiell/' manifest.yaml''')
 	s.send('make minikube',note='make the container')
 	s.send('make',note='load it up(?)')
 	# No need to push as it's to another user's docker repo

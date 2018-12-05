@@ -175,7 +175,7 @@ def do_istioinaction(s):
 	s.send('kubectl create -n istio-system secret generic istio-ingressgateway-ca-certs --from-file=chapter-files/chapter4/certs/2_intermediate/certs/ca-chain.cert.pem',note='Now doing mtls, set up ca certs secrets')
 	s.send('kubectl replace -f chapter-files/chapter4/coolstore-gw-mtls.yaml',note='mTLS gateway config')
 	s.send('curl -H "Host: apiserver.istioinaction.io" https://apiserver.istioinaction.io:' + HTTPS_PORT + '/api/products --cacert chapter-files/chapter4/certs/2_intermediate/certs/ca-chain.cert.pem --resolve apiserver.istioinaction.io:' + HTTPS_PORT + ':' + HTTPS_HOST,note='Same call as before should be rejected, as we are only passing the CA cert chain to the curl command. Need to pass the client cert and private key with the --cert and --key parameters as per next command')
-	# p.122
+	# p.122
 	s.send('curl -H "Host: apiserver.istioinaction.io" https://apiserver.istioinaction.io:' + HTTPS_PORT + '/api/products --cacert chapter-files/chapter4/certs/2_intermediate/certs/ca-chain.cert.pem --resolve apiserver.istioinaction.io:' + HTTPS_PORT + ':' + HTTPS_HOST + ' --cert chapter-files/chapter4/certs/4_client/certs/apiserver.istioinaction.io.cert.pem --key chapter-files/chapter4/certs/4_client/private/apiserver.istioinaction.io.key.pem',note='should see a 200 and JSON')
 	# 4.3.4 Serving multuiple virtual hosts with TLS
 	s.send('kubectl create -n istio-system secret tls catalog-ingressgateway-certs --key chapter-files/chapter4/certs2/3_application/private/catalog.istioinaction.io.key.pem --cert chapter-files/chapter4/certs2/3_application/certs/catalog.istioinaction.io.cert.pem',note="Create extra certs and keys for the multiple virtual hosts")
@@ -184,7 +184,7 @@ def do_istioinaction(s):
 	s.send('kubectl replace -f chapter-files/chapter4/catalog-vs.yaml',note='Add catalog virtual service')
 	s.send('curl -H "Host: apiserver.istioinaction.io" https://apiserver.istioinaction.io:' + HTTPS_PORT + '/api/products --cacert chapter-files/chapter4/certs/2_intermediate/certs/ca-chain.cert.pem --resolve apiserver.istioinaction.io:' + HTTPS_PORT + ':' + HTTPS_HOST,note='This call should work as per the simple TLS section')
 	s.send('curl -H "Host: catalog.istioinaction.io" https://catalog.istioinaction.io:' + HTTPS_PORT + '/api/catalog --cacert chapter-files/chapter4/certs2/2_intermediate/certs/ca-chain.cert.pem --resolve catalog.istioinaction.io:' + HTTPS_PORT + ':' + HTTPS_HOST,note='Should also work - uses SNI to know which cert to present to which client')
-	# p.123 - TCP traffic
+	# p.123 - TCP traffic
 	s.send('kubectl create -f <(istioctl kube-inject -f chapter-files/chapter4/echo.yaml)',note='Create simple TCP echo service from https://github.com/cjimti/go-echo/')
 	# p.124 -
 	s.send('kubectl create -f chapter-files/chapter4/gateway-tcp.yaml',note='Expose port 31400 on default istio-ingressgateway, and expose as NodePort on 31400')
