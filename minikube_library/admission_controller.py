@@ -8,12 +8,13 @@ def do_admission_controller(s):
 	s.send('cd mwcexample')
 	s.send('''sed -i 's/jasonrichardsmith/imiell/' Makefile''')
 	s.send('''sed -i 's/jasonrichardsmith/imiell/' manifest.yaml''')
-	s.send('make minikube',note='make the container')
-	s.send('make',note='load it up(?)')
+	#s.send('make minikube',note='make the container')
+	s.send('eval $(minikube docker-env)')
+	s.pause_point('docker login')
+	s.send('make && makepush',note='load it up(?)')
 	# No need to push as it's to another user's docker repo
 	#s.send('make push')
 	# TODO: annotate based on webhook basics above
-	s.pause_point('annotate')
 	s.send('kubectl apply -f ns.yaml',note='Make the namespace')
 	s.send('./gen-cert.sh','''Generate the certs. Aside from the openssl work, the
 kubectl commands used are:
