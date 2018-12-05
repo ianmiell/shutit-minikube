@@ -6,15 +6,68 @@ def do_admission_controller(s):
 	s.send('cd ~/minikube_tmp/admission_controlller')
 	s.send('git clone https://github.com/jasonrichardsmith/mwcexample')
 	s.send('cd mwcexample')
-	s.send('make minikube')
-	s.send('make')
+	s.send('make minikube',note='make the container')
+	s.send('make',note='load it up(?)')
 	# No need to push as it's to another user's docker repo
 	#s.send('make push')
 	# TODO: annotate based on webhook basics above
 	s.pause_point('annotate')
-	s.send('kubectl apply -f ns.yaml')
-	s.send('./gen-cert.sh')
-	s.send('./ca-bundle.sh')
+	s.send('kubectl apply -f ns.yaml',note='Make the namespace')
+	s.send('./gen-cert.sh','''Generate the certs. Aside from the openssl work, the
+kubectl commands used are:
+# delete any previous certificate signing requests
+kubectl delete csr ${csrName} 2>/dev/null || true
+# create csr with:
+cat <<EOF | kubectl create -f -
+apiVersion: certificates.k8s.io/v1beta1
+kind: CertificateSigningRequest
+metadata:
+  name: ${csrName}
+spec:
+  groups:
+  - system:authenticated
+  request: $(cat ${tmpdir}/server.csr | base64 | tr -d '\n')
+  usages:
+  - digital signature
+  - key encipherment
+  - server auth
+EOF
+# Check it's been added
+kubectl get csr ${csrName}
+# Approve the csr
+kubectl certificate approve ${csrName}
+# Check it's been approved
+kubectl get csr ${csrName} -o jsonpath='{.status.certificate}'
+# Create the secret with the server key and cert
+kubectl create secret generic ${title} --from-file=key.pem=${tmpdir}/server-key.pem --from-file=cert.pem=${tmpdir}/server-cert.pem --dry-run -o yaml | kubectl -n ${title} apply -f
+''')
+	s.send('./ca-bundle.sh',note="""Creates a ca bundle(?) with:
+
+kubectl get configmap -n kube-system extension-apiserver-authentication -o=jsonpath='{.data.client-ca-file}'
+
+the output of which is placed in an exported variable (CA_BUNDLE) and then sub into the deployment/service setup etc in manifest.yaml, which contains the mutating webhook:
+
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: mwc-example
+webhooks:
+  - name: mwc-example.jasonrichardsmith.com
+    clientConfig:
+      service:
+        name: mwc-example
+        namespace: mwc-example
+        path: "/mutating-pods"
+      caBundle: "${CA_BUNDLE}"
+    rules:
+      - operations: ["CREATE","UPDATE"]
+        apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["pods"]
+    failurePolicy: Fail
+    namespaceSelector:
+      matchLabels:
+        mwc-example: enabled""")
 	s.send('kubectl apply -f manifest-ca.yaml')
 	s.send('kubectl apply -f test.yaml')
 	s.send('kubectl get pods -n mwc-test -o json | jq .items[0].metadata.labels')
