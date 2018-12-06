@@ -1,4 +1,4 @@
-def do_admission_controller(s):
+def do_admission_controller_mutating(s):
 	# See: https://github.com/jasonrichardsmith/mwcexample
 	# See: https://container-solutions.com/some-admission-webhook-basics/
 	s.send('rm -rf ~/minikube_tmp/admission_controlller')
@@ -73,6 +73,17 @@ webhooks:
 	s.send('kubectl get pods -n mwc-test -o json | jq .items[0].metadata.labels')
 	s.pause_point('play')
 
+def do_admission_controller_validating(s):
+	# https://banzaicloud.com/blog/k8s-admission-webhooks/
+	# https://github.com/banzaicloud/admission-webhook-example/tree/blog
+	s.send('rm -rf ~/minikube_tmp/admission_controlller')
+	s.send('mkdir -p ~/minikube_tmp/admission_controlller')
+	s.send('cd ~/minikube_tmp/admission_controlller')
+	s.send('git clone git@github.com:banzaicloud/admission-webhook-example.git')
+	s.send('cd admission-webhook-example')
+	s.send('git checkout blog')
+	s.pause_point('https://banzaicloud.com/blog/k8s-admission-webhooks/')
+	pass
 
 #https://medium.com/ibm-cloud/diving-into-kubernetes-mutatingadmissionwebhook-6ef3c5695f74
 def do_admission_controller_other(s):

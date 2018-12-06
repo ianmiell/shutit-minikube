@@ -110,29 +110,35 @@ def do_istioinaction(s):
 	s.send('docker pull tutum/curl')
 	s.send('docker pull citizenstig/httpbin')
 	# p.88
-	TODO annotate from here.
-	s.send('docker run -d --name httpbin citizenstig/httpbin')
-	s.send('docker run -it --rm --link httpbin tutum/curl curl -X GET http://httpbin:8000/headers',note='Look at httpbin:8000 headers')
+	s.send('docker run -d --name httpbin citizenstig/httpbin',note='Set up the httpbin service')
+	s.send('docker run -it --rm --link httpbin tutum/curl curl -X GET http://httpbin:8000/headers',note='Look at httpbin:8000 headers',note='Test that the service was deployed by querying the headers endpoint')
 	s.send('docker run -it --rm istioinaction/envoy:v1.7.0 envoy --help',note='Show envoy help')
-	s.send('docker run -it --rm istioinaction/envoy:v1.7.0 envoy || true',note='Run envoy with no config (will fail)')
+	# p.89
+	s.send('docker run -it --rm istioinaction/envoy:v1.7.0 envoy || true',note='Run envoy with no config. Will fail')
 	s.send('docker run -i --rm --entrypoint "cat" istioinaction/envoy:v1.7.0 /etc/envoy/simple.yaml',note='Run sith a simple config (cat-ed above)')
+	# p.90
 	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple.yaml',note='Run envoy with a simple proxy config')
 	s.send('docker logs proxy',note='Look at envoy logs')
-	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/headers',note='Look at proxy:15001 headers')
+	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/headers',note='Look at proxy:15001 headers as that is the port it is listening on.')
+	# p.91
 	s.send('docker rm -f proxy',note='Delete proxy')
 	s.send('docker run -i --rm --link httpbin --entrypoint diff istioinaction/envoy:v1.7.0 /etc/envoy/simple.yaml /etc/envoy/simple_change_timeout.yaml',note='Show diff between last config and new one')
-	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple_change_timeout.yaml',note='Run again, but change timeout (different config)')
-	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/headers',note='Get headers')
-	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats',note='Get stats')
+	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple_change_timeout.yaml',note='Run again, but change timeout (using the different config)')
+	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/headers',note='Get headers again, see timeout setting')
+	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats',note='Get stats from envoy admin port (15000)')
+	# p.92
 	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats | grep retry',note='Too much crap - now grep for retry')
 	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/',note='Get list of endpoints - explore!')
+	# p.93
 	s.send('docker rm -f proxy',note='Delete proxy')
-	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple_retry.yaml',note='un again, but change retry policy')
+	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple_retry.yaml',note='Run again, but change retry policy')
 	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/status/500',note='create a 500 error by calling /status/500')
-	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats | grep retry',note='what happened?')
+	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats | grep retry',note='See what happened from the stats?')
 	# CHAPTER 4
+	# p.103
 	INGRESS_POD = s.send_and_get_output('kubectl get pod -n istio-system | grep ingressgateway | cut -d ' ' -f 1',note='Get ingress gateway pod')
 	s.send('kubectl -n istio-system exec ' + INGRESS_POD + ' ps aux',note='Show processes running within gateway pod')
+	# p.105
 	s.send('kubectl create -f chapter-files/chapter4/coolstore-gw.yaml',note='Create coolstore gateway')
 	s.send('istioctl proxy-config listener ' + INGRESS_POD + ' -n istio-system',note='Expect to see a listener on 0.0.0.0:80 of type HTTP')
 	s.send('istioctl proxy-config route ' + INGRESS_POD + ' -n istio-system',note='View the route in json. Start by matching everything to 404')
@@ -172,7 +178,9 @@ def do_istioinaction(s):
 	# L4 concerns: Ports
 	# L5 concerns: Connecting to (?)
 	# L7 concerns: HTTP headers
+	# p.108
 	s.send('kubectl create -f chapter-files/chapter4/coolstore-vs.yaml',note='create the VirtualService')
+TODO listener and route commands on p.108
 	# Check the apigateway and catalog pods are there.
 	s.send('kubectl get pod',note='should see two pods ready')
 	s.send('kubectl get gateway',note='check gateway exists')
