@@ -70,8 +70,8 @@ class shutit_minikube(ShutItModule):
 			flux.do_flux(shutit)
 		if shutit.cfg[self.module_id]['do_admission_controller']:
 			shutit.send('minikube start')
-			admission_controller.do_admission_controller_mutating(shutit)
 			admission_controller.do_admission_controller_validating(shutit)
+			admission_controller.do_admission_controller_mutating(shutit)
 		if shutit.cfg[self.module_id]['do_basic']:
 			shutit.send('minikube start')
 			shutit.send('kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')

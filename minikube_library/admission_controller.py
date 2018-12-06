@@ -74,15 +74,28 @@ webhooks:
 	s.pause_point('play')
 
 def do_admission_controller_validating(s):
-	# https://banzaicloud.com/blog/k8s-admission-webhooks/
-	# https://github.com/banzaicloud/admission-webhook-example/tree/blog
+	## https://banzaicloud.com/blog/k8s-admission-webhooks/
+	## https://github.com/banzaicloud/admission-webhook-example/tree/blog
 	s.send('rm -rf ~/minikube_tmp/admission_controller')
 	s.send('mkdir -p ~/minikube_tmp/admission_controller')
 	s.send('cd ~/minikube_tmp/admission_controller')
-	s.send('git clone git@github.com:banzaicloud/admission-webhook-example.git')
-	s.send('cd admission-webhook-example')
-	s.send('git checkout blog')
-	s.pause_point('https://banzaicloud.com/blog/k8s-admission-webhooks/')
+	s.send('kubectl api-versions')
+	#s.send('git clone git@github.com:banzaicloud/admission-webhook-example.git')
+	#s.send('cd admission-webhook-example')
+	#s.send('git checkout blog')
+	#s.pause_point('https://banzaicloud.com/blog/k8s-admission-webhooks/')
+
+	# Above did not work:
+	# https://github.com/dkoshkin/admission-webhook
+	s.send('git clone https://github.com/dkoshkin/admission-webhook')
+	s.send('cd admission-webhook')
+	s.send('./scripts/pki.sh')
+	s.send('export CA=`cat pki/example/ca.pem | base64`')
+	s.send('export TLS_CERT=`cat pki/example/admission-webhook.pem | base64`')
+	s.send('export TLS_KEY=`cat pki/example/admission-webhook-key.pem | base64`')
+	s.send('./scripts/deploy.sh')
+	s.send('kubectl apply -f examples/')
+	s.pause_point('kubectl get deploy')
 
 
 #https://medium.com/ibm-cloud/diving-into-kubernetes-mutatingadmissionwebhook-6ef3c5695f74

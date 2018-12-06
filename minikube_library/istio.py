@@ -78,8 +78,8 @@ def do_istioinaction(s):
 	# p.67
 	s.send('curl ' + URL + '/api/products -H "failure-percentage: 100"',note='Induce a failure in lookup')
 
-	# 2.4.3 Istio for traffic routing
-	# p.68
+	# 2.4.3 Istio for traffic routing
+	# p.68
 	s.send('''kubectl create -f chapter-files/chapter2/catalog-virtualservice.yaml''',note='Set up ingress gateway')
 	# Generate traffic
 	for _ in []*10:
@@ -87,7 +87,7 @@ def do_istioinaction(s):
 	# p.70
 	s.send('kubectl create -f <(istioctl kube-inject -f ./install/catalog-v2-service/catalog-v2-deployment.yaml)',note='Create an istio-d catalog v2')
 	s.send('kubectl create -f chapter-files/chapter2/catalog-destinationrule.yaml',note='Set up destination rule')
-	# p.71
+	# p.71
 	s.send('kubectl apply -f chapter-files/chapter2/catalog-virtualservice-all-v1.yaml',note='Set up virtualservice')
 	# v1 responses only now
 	for _ in []*5:
@@ -102,25 +102,25 @@ def do_istioinaction(s):
 	s.send('kill %2')
 
 	# CHAPTER 3
-	# 3.3 Envoy in action
+	# 3.3 Envoy in action
 	# p.87
 	s.send('''eval $(minikube docker-env)''',note='Move to docker environment and then pull images')
 	s.send('docker ps')
 	s.send('docker pull istioinaction/envoy:v1.7.0')
 	s.send('docker pull tutum/curl')
 	s.send('docker pull citizenstig/httpbin')
-	# p.88
+	# p.88
 	s.send('docker run -d --name httpbin citizenstig/httpbin',note='Set up the httpbin service')
-	s.send('docker run -it --rm --link httpbin tutum/curl curl -X GET http://httpbin:8000/headers',note='Look at httpbin:8000 headers',note='Test that the service was deployed by querying the headers endpoint')
+	s.send('docker run -it --rm --link httpbin tutum/curl curl -X GET http://httpbin:8000/headers',note='Test that the service was deployed by querying the headers endpoint')
 	s.send('docker run -it --rm istioinaction/envoy:v1.7.0 envoy --help',note='Show envoy help')
-	# p.89
+	# p.89
 	s.send('docker run -it --rm istioinaction/envoy:v1.7.0 envoy || true',note='Run envoy with no config. Will fail')
 	s.send('docker run -i --rm --entrypoint "cat" istioinaction/envoy:v1.7.0 /etc/envoy/simple.yaml',note='Run sith a simple config (cat-ed above)')
-	# p.90
+	# p.90
 	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple.yaml',note='Run envoy with a simple proxy config')
 	s.send('docker logs proxy',note='Look at envoy logs')
 	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/headers',note='Look at proxy:15001 headers as that is the port it is listening on.')
-	# p.91
+	# p.91
 	s.send('docker rm -f proxy',note='Delete proxy')
 	s.send('docker run -i --rm --link httpbin --entrypoint diff istioinaction/envoy:v1.7.0 /etc/envoy/simple.yaml /etc/envoy/simple_change_timeout.yaml',note='Show diff between last config and new one')
 	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple_change_timeout.yaml',note='Run again, but change timeout (using the different config)')
@@ -138,7 +138,7 @@ def do_istioinaction(s):
 	# p.103
 	INGRESS_POD = s.send_and_get_output('kubectl get pod -n istio-system | grep ingressgateway | cut -d ' ' -f 1',note='Get ingress gateway pod')
 	s.send('kubectl -n istio-system exec ' + INGRESS_POD + ' ps aux',note='Show processes running within gateway pod')
-	# p.105
+	# p.105
 	s.send('kubectl create -f chapter-files/chapter4/coolstore-gw.yaml',note='Create coolstore gateway')
 	s.send('istioctl proxy-config listener ' + INGRESS_POD + ' -n istio-system',note='Expect to see a listener on 0.0.0.0:80 of type HTTP')
 	s.send('istioctl proxy-config route ' + INGRESS_POD + ' -n istio-system',note='View the route in json. Start by matching everything to 404')
@@ -178,9 +178,11 @@ def do_istioinaction(s):
 	# L4 concerns: Ports
 	# L5 concerns: Connecting to (?)
 	# L7 concerns: HTTP headers
-	# p.108
+	# p.108
 	s.send('kubectl create -f chapter-files/chapter4/coolstore-vs.yaml',note='create the VirtualService')
-TODO listener and route commands on p.108
+#TODO listener and route commands on p.108
+	s.send('istioctl proxy-config listener istio-ingressgateway-5ff9b6d9cb-pnrq9  -n istio-system',note='Show listener')
+	s.send('istioctl proxy-config route istio-ingressgateway-5ff9b6d9cb-pnrq9  -n istio-system',note='Show route')
 	# Check the apigateway and catalog pods are there.
 	s.send('kubectl get pod',note='should see two pods ready')
 	s.send('kubectl get gateway',note='check gateway exists')
@@ -224,7 +226,7 @@ TODO listener and route commands on p.108
 	s.send('kubectl create -f chapter-files/chapter4/gateway-tcp.yaml',note='Expose port 31400 on default istio-ingressgateway, and expose as NodePort on 31400')
 	# p.125 -
 	s.send('kubectl create -f chapter-files/chapter4/echo-vs.yaml',note='Now port is exposed on the ingress gateway, route traffic to the echo service')
-	TCP_PORT = s.send_and_get_output("kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="tcp")].nodePort}'",note='Get tcp port from gateway spec')
+	TCP_PORT = s.send_and_get_output("""kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="tcp")].nodePort}'""",note='Get tcp port from gateway spec')
 	s.pause_point('telnet $(minikube ip) ' + TCP_PORT,note='connect to tcp service')
 	# 4.4.2 - traffic routing with SNI and TLS - TODO
 	s.pause_point('done ch4')
