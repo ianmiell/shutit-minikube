@@ -69,8 +69,10 @@ class shutit_minikube(ShutItModule):
 			shutit.send('minikube start')
 			flux.do_flux(shutit)
 		if shutit.cfg[self.module_id]['do_admission_controller']:
-			shutit.send('minikube start')
-			admission_controller.do_admission_controller_validating(shutit)
+			shutit.send('minikube start --kubernetes-version=' + shutit.cfg[self.module_id]['kubernetes_version'] + ' --bootstrapper=kubeadm --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook,ValidatingAdmissionWebhook"')
+			admission_controller.do_admission_controller_opa(shutit)
+			# Does not work
+			#admission_controller.do_admission_controller_validating(shutit)
 			admission_controller.do_admission_controller_mutating(shutit)
 		if shutit.cfg[self.module_id]['do_basic']:
 			shutit.send('minikube start')
@@ -93,7 +95,7 @@ class shutit_minikube(ShutItModule):
 		shutit.get_config(self.module_id,'do_operator',boolean=True,default=False)
 		shutit.get_config(self.module_id,'do_admission_controller',boolean=True,default=False)
 		shutit.get_config(self.module_id,'istio_version',default='1.0.3')
-		shutit.get_config(self.module_id,'kubernetes_version',default='1.11.0')
+		shutit.get_config(self.module_id,'kubernetes_version',default='1.12.0')
 		shutit.get_config(self.module_id,'download',default=True,boolean=True)
 		return True
 

@@ -17,7 +17,7 @@ $SHUTIT build -d bash \
 	-s techniques.shutit_minikube.shutit_minikube do_basic no \
 	-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
 	-s techniques.shutit_minikube.shutit_minikube do_admission_controller yes \
-	-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
+	-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.12.0' \
 	-m shutit-library/vagrant -m shutit-library/virtualization "$@"
 if [[ $? != 0 ]]
 then
