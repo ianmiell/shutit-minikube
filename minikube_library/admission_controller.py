@@ -279,7 +279,7 @@ data:
     }
 EOF''',note='''Create admission controller file AdmissionReview
 This creates the opa-default-system-main, which presumably the opa image expects.
-Try changing it to see what happens. TODO
+Try changing it to see what happens: it's fine.
 So main evaluates to the Admission Review response, which leads onto the response.
 The response defaults to allowed if the 'response = {' doesn't evaluate all to true
 Note that the last item is a !=
@@ -287,7 +287,7 @@ so if the reason is empty it evalates to false and returns allowed: true back
 to the doc.
 ''')
 	s.send('kubectl apply -f admission-controller.yaml',note='Apply the settings')
-	s.send('''cat > webhook-configuration.yaml <<EOF
+	s.send(r'''cat > webhook-configuration.yaml <<EOF
 kind: ValidatingWebhookConfiguration
 apiVersion: admissionregistration.k8s.io/v1beta1
 metadata:
@@ -304,13 +304,13 @@ webhooks:
       service:
         namespace: opa
         name: opa
-EOF''',note='Create the webhook configuration yaml, passing in the b64-encoded ca
-Applies to all resources, apigroups and apiversions for CREATE and UPDATE operations and the service in opa running in opa')
+EOF''',note='''Create the webhook configuration yaml, passing in the b64-encoded ca
+Applies to all resources, apigroups and apiversions for CREATE and UPDATE operations and the service in opa running in opa''')
 	s.send('kubectl apply -f webhook-configuration.yaml',note='Apply the webhook configuration yaml')
 	# package - kubernetes.admission
-	#   referred to in the ConfigMap opa-default-system-main
+	# referred to in the ConfigMap opa-default-system-main
 	# import - data.kubernetes.namespaces - gives access to the namespaces.
-	# 
+	#
 	# The whitelist is grabbed from ingress.
 	s.send('''cat >ingress-whitelist.rego << EOF
 package kubernetes.admission
@@ -351,7 +351,7 @@ fqdn_matches(str, pattern) {
 }
 EOF''',note='''Set up an ingress whitelist rego file (TODO: what does it do?)
 
-deny will deny Ingress CREATE actions. How do we add another type?
+deny will deny Ingress CREATE actions. How do we add another type? See below
 ''')
 	s.send('kubectl create configmap ingress-whitelist --from-file=ingress-whitelist.rego',note='Create configmap from rego file called ingress-whitelist')
 	s.send('''cat >qa-namespace.yaml << EOF
@@ -402,6 +402,9 @@ spec:
 EOF''',note='Create a BAD ingress object')
 	s.send('kubectl create -f ingress-ok.yaml -n production',note='ok object is fine for prod')
 	s.send('kubectl create -f ingress-bad.yaml -n qa',note='bad object is not acceptable for qa')
+
+	# SECOND RULE
+	# TODO: how do I find out what data is available to me?
 	s.send('''cat >ingress-conflicts.rego << EOF
 package kubernetes.admission
 
@@ -416,7 +419,10 @@ deny[msg] {
     ingress.spec.rules[_].host = host
     msg = sprintf("invalid ingress host %q (conflicts with %v/%v)", [host, other_ns, other_ingress])
 }
-EOF''',note='Now create a policy that rejects ingress objects in different namesapces that share the same hostname')
+EOF''',note='''Now create a policy that rejects ingress objects in different namesapces that share the same hostname
+
+Looks like it checks through all the configmaps one by one (?)
+''')
 	s.send('kubectl create configmap ingress-conflicts --from-file=ingress-conflicts.rego',note='create the configmap that stores the rules')
 	s.send('kubectl get configmap ingress-conflicts -o yaml',note='check it was installed correctly')
 	s.send('''cat >staging-namespace.yaml << EOF
@@ -429,6 +435,55 @@ metadata:
 EOF''',note='Try and create a namespace with a whitelist used before')
 	s.send('kubectl create -f staging-namespace.yaml',note='Create the namespace')
 	s.send('kubectl create -f ingress-ok.yaml -n staging',note='Fails, as namespace used before')
+
+	# MY RULES
+	s.send('''cat >no-pods.rego << EOF
+package kubernetes.admission
+
+import data.kubernetes.ingresses
+
+deny[msg] {
+    input.request.kind.kind = "Deployment"
+    input.request.operation = "CREATE"
+    msg = sprintf("No way Jose")
+}
+EOF''',note='''Now create a policy that rejects deployments''')
+	s.send('kubectl create configmap no-pods --from-file=no-pods.rego',note='create the configmap that stores the rules')
+	s.send('''cat >deployment-test.yaml << EOF
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sleep
+spec:
+  replicas: 1
+  template:
+    metadata:
+      namespace: default
+      labels:
+        app: sleep
+    spec:
+      containers:
+      - name: sleep
+        image: tutum/curl
+        command: ["/bin/sleep","infinity"]
+        imagePullPolicy: IfNotPresent
+EOF''')
+	s.send('kubectl create -f deployment-test.yaml',note='Create the deployment, should fail')
+	s.pause_point('OK?')
+
+
+
+
+
+#https://medium.com/ibm-cloud/diving-into-kubernetes-mutatingadmissionwebhook-6ef3c5695f74
+def do_admission_controller_other(s):
+	s.send('rm -rf ~/minikube_tmp/admission_controller')
+	s.send('mkdir -p ~/minikube_tmp/admission_controller')
+	s.send('cd ~/minikube_tmp/admission_controller')
+	s.send('git clone https://github.com/morvencao/kube-mutating-webhook-tutorial')
+	s.send('cd kube-mutating-webhook-tutorial')
+	s.send('dep ensure')
+	s.send('CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o kube-mutating-webhook-tutorial .')
 	s.pause_point('OK?')
 
 
