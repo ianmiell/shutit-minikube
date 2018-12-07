@@ -117,11 +117,11 @@ def do_admission_controller_validating(s):
 def do_admission_controller_opa(s):
 	# https://www.openpolicyagent.org/docs/kubernetes-admission-control.html
 	s.send('minikube addons enable ingress')
-	s.send('kubectl create namespace opa')
-	s.send('kubectl config set-context opa-tutorial --user minikube --cluster minikube --namespace opa')
-	s.send('kubectl config use-context opa-tutorial')
-	s.send('openssl genrsa -out ca.key 2048')
-	s.send('openssl req -x509 -new -nodes -key ca.key -days 100000 -out ca.crt -subj "/CN=admission_ca"')
+	s.send('kubectl create namespace opa',note='Create opa namespace')
+	s.send('kubectl config set-context opa-tutorial --user minikube --cluster minikube --namespace opa',note='create context')
+	s.send('kubectl config use-context opa-tutorial',note='set context')
+	s.send('openssl genrsa -out ca.key 2048',note='create a ca key')
+	s.send('openssl req -x509 -new -nodes -key ca.key -days 100000 -out ca.crt -subj "/CN=admission_ca"',note='Create X509 CA cert from the key')
 	s.send('''cat >server.conf <<EOF
 [req]
 req_extensions = v3_req
@@ -131,11 +131,11 @@ distinguished_name = req_distinguished_name
 basicConstraints = CA:FALSE
 keyUsage = nonRepudiation, digitalSignature, keyEncipherment
 extendedKeyUsage = clientAuth, serverAuth
-EOF''')
-	s.send('openssl genrsa -out server.key 2048')
-	s.send('openssl req -new -key server.key -out server.csr -subj "/CN=opa.opa.svc" -config server.conf',note='opa.opa.svc must match opa service created below')
-	s.send('openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 100000 -extensions v3_req -extfile server.conf')
-	s.send('kubectl create secret tls opa-server --cert=server.crt --key=server.key',note='create secret to store creds for OPA')
+EOF''',note='Create a server.conf file for server csr generation')
+	s.send('openssl genrsa -out server.key 2048',note='create a server key')
+	s.send('openssl req -new -key server.key -out server.csr -subj "/CN=opa.opa.svc" -config server.conf',note='create server csr opa.opa.svc must match opa service created below')
+	s.send('openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 100000 -extensions v3_req -extfile server.conf',note='creaste cert against previously-created CA')
+	s.send('kubectl create secret tls opa-server --cert=server.crt --key=server.key',note='create secret to store server cert and key for OPA')
 	s.send('''cat >admission-controller.yaml << 'EOF'
 # Grant OPA/kube-mgmt read-only access to resources. This let's kube-mgmt
 # replicate resources into OPA so they can be used in policies.
@@ -152,6 +152,8 @@ subjects:
   name: system:serviceaccounts:opa
   apiGroup: rbac.authorization.k8s.io
 ---
+EOF''',note='Create admission controller file ClusterRole')
+	s.send('''cat >>admission-controller.yaml << 'EOF'
 # Define role for OPA/kube-mgmt to update configmaps with policy status.
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -163,6 +165,8 @@ rules:
   resources: ["configmaps"]
   verbs: ["update", "patch"]
 ---
+EOF''',note='Create admission controller file Role')
+	s.send('''cat >>admission-controller.yaml << 'EOF'
 # Grant OPA/kube-mgmt role defined above.
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -178,6 +182,8 @@ subjects:
   name: system:serviceaccounts:opa
   apiGroup: rbac.authorization.k8s.io
 ---
+EOF''',note='Create admission controller file RoleBinding')
+	s.send('''cat >>admission-controller.yaml << 'EOF'
 kind: Service
 apiVersion: v1
 metadata:
@@ -192,6 +198,8 @@ spec:
     port: 443
     targetPort: 443
 ---
+EOF''',note='Create admission controller file Service')
+	s.send('''cat >>admission-controller.yaml << 'EOF'
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -211,11 +219,6 @@ spec:
       name: opa
     spec:
       containers:
-        # WARNING: OPA is NOT running with an authorization policy configured. This
-        # means that clients can read and write policies in OPA. If you are
-        # deploying OPA in an insecure environment, be sure to configure
-        # authentication and authorization on the daemon. See the Security page for
-        # details: https://www.openpolicyagent.org/docs/security.html.
         - name: opa
           image: openpolicyagent/opa:0.10.1
           args:
@@ -239,6 +242,13 @@ spec:
           secret:
             secretName: opa-server
 ---
+EOF''',note='''Create admission controller file Deployment
+The deployment uses the openpolicyagent/opa:0.10.1 image for container 1
+and openpolicyagent/kube-mgmt:0.6 for container 2.
+volumeMounts loads the certs from the tls secret created earlier.
+The 443 port is mapped to the container's 8181 port.''')
+
+	s.send('''cat >>admission-controller.yaml << 'EOF'
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -267,8 +277,11 @@ data:
         reason = concat(", ", admission.deny)
         reason != ""
     }
-EOF''')
-	s.send('kubectl apply -f admission-controller.yaml')
+EOF''',note='''Create admission controller file AdmissionReview
+This creates the opa-default-system-main, which presumably the opa image expects.
+Try changing it to see what happens.
+''')
+	s.send('kubectl apply -f admission-controller.yaml',note='Apply the settings')
 	s.send('''cat > webhook-configuration.yaml <<EOF
 kind: ValidatingWebhookConfiguration
 apiVersion: admissionregistration.k8s.io/v1beta1
@@ -286,30 +299,129 @@ webhooks:
       service:
         namespace: opa
         name: opa
-EOF''')
-	s.send('kubectl apply -f webhook-configuration.yaml')
+EOF''',note='Create the webhook configuration yaml, passing in the b64-encoded ca
+Applies to all resources, apigroups and apiversions for CREATE and UPDATE operations and the service in opa running in opa')
+	s.send('kubectl apply -f webhook-configuration.yaml',note='Apply the webhook configuration yaml')
+	# package - kubernetes.admission
+	#   referred to in the ConfigMap opa-default-system-main
+	# import - data.kubernetes.namespaces - gives access to the namespaces.
+	# 
+	# The whitelist is grabbed from ingress.
 	s.send('''cat >ingress-whitelist.rego << EOF
-TODO
-EOF''')
-	s.send('kubectl create configmap ingress-whitelist --from-file=ingress-whitelist.rego')
-	s.send('''cat >qa-namespace.yaml << EOF
-TODO
-EOF''')
-	s.send('''cat >production-namespace.yaml << EOF
-TODO
-EOF''')
-	s.send('kubectl create -f qa-namespace.yaml')
-	s.send('kubectl create -f production-namespace.yaml')
-	s.send('''cat >ingress-ok.yaml << EOF
-TODO
-EOF''')
-	s.send('''cat >ingress-bad.yaml << EOF
-TODO
-EOF''')
-	s.send('kubectl create -f ingress-ok.yaml -n production')
-	s.send('kubectl create -f ingress-bad.yaml -n qa')
+package kubernetes.admission
 
-	s.pause_point('last one should have failed - TODO 6. and then notes')
+import data.kubernetes.namespaces
+
+deny[msg] {
+    input.request.kind.kind = "Ingress"
+    input.request.operation = "CREATE"
+    host = input.request.object.spec.rules[_].host
+    not fqdn_matches_any(host, valid_ingress_hosts)
+    msg = sprintf("invalid ingress host %q", [host])
+}
+
+valid_ingress_hosts = {host |
+    whitelist = namespaces[input.request.namespace].metadata.annotations["ingress-whitelist"]
+    hosts = split(whitelist, ",")
+    host = hosts[_]
+}
+
+fqdn_matches_any(str, patterns) {
+    fqdn_matches(str, patterns[_])
+}
+
+fqdn_matches(str, pattern) {
+    pattern_parts = split(pattern, ".")
+    pattern_parts[0] = "*"
+    str_parts = split(str, ".")
+    n_pattern_parts = count(pattern_parts)
+    n_str_parts = count(str_parts)
+    suffix = trim(pattern, "*.")
+    endswith(str, suffix)
+}
+
+fqdn_matches(str, pattern) {
+    not contains(pattern, "*")
+    str = pattern
+}
+EOF''',note='Set up an ingress whitelist rego file (TODO: what does it do?)')
+	s.send('kubectl create configmap ingress-whitelist --from-file=ingress-whitelist.rego',note='Create configmap from rego file called ingress-whitelist')
+	s.send('''cat >qa-namespace.yaml << EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    ingress-whitelist: "*.qa.acmecorp.com,*.internal.acmecorp.com"
+  name: qa
+EOF''',note='Create a qa namespace with a longer ingress whitelist with internal urls')
+	s.send('''cat >production-namespace.yaml << EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    ingress-whitelist: "*.acmecorp.com"
+  name: production
+EOF''',note='Create a prod namespace with a shorter ingress whitelist')
+	s.send('kubectl create -f qa-namespace.yaml',note='create qa namespace')
+	s.send('kubectl create -f production-namespace.yaml',note='create prod namespace')
+	s.send('''cat >ingress-ok.yaml << EOF
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-ok
+spec:
+  rules:
+  - host: signin.acmecorp.com
+    http:
+      paths:
+      - backend:
+          serviceName: nginx
+          servicePort: 80
+EOF''',note='Create an acceptable ingress object.')
+	s.send('''cat >ingress-bad.yaml << EOF
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-bad
+spec:
+  rules:
+  - host: acmecorp.com
+    http:
+      paths:
+      - backend:
+          serviceName: nginx
+          servicePort: 80
+EOF''',note='Create a BAD ingress object')
+	s.send('kubectl create -f ingress-ok.yaml -n production',note='ok object is fine for prod')
+	s.send('kubectl create -f ingress-bad.yaml -n qa',note='bad object is not acceptable for qa')
+	s.send('''cat >ingress-conflicts.rego << EOF
+package kubernetes.admission
+
+import data.kubernetes.ingresses
+
+deny[msg] {
+    input.request.kind.kind = "Ingress"
+    input.request.operation = "CREATE"
+    host = input.request.object.spec.rules[_].host
+    ingress = ingresses[other_ns][other_ingress]
+    other_ns != input.request.namespace
+    ingress.spec.rules[_].host = host
+    msg = sprintf("invalid ingress host %q (conflicts with %v/%v)", [host, other_ns, other_ingress])
+}
+EOF''',note='Now create a policy that rejects ingress objects in different namesapces that share the same hostname')
+	s.send('kubectl create configmap ingress-conflicts --from-file=ingress-conflicts.rego',note='create the configmap that stores the rules')
+	s.send('kubectl get configmap ingress-conflicts -o yaml',note='check it was installed correctly')
+	s.send('''cat >staging-namespace.yaml << EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    ingress-whitelist: "*.acmecorp.com"
+  name: staging
+EOF''',note='Try and create a namespace with a whitelist used before')
+	s.send('kubectl create -f staging-namespace.yaml',note='Create the namespace')
+	s.send('kubectl create -f ingress-ok.yaml -n staging',note='Fails, as namespace used before')
+	s.pause_point('OK?')
 
 
 
