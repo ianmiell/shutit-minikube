@@ -279,7 +279,12 @@ data:
     }
 EOF''',note='''Create admission controller file AdmissionReview
 This creates the opa-default-system-main, which presumably the opa image expects.
-Try changing it to see what happens.
+Try changing it to see what happens. TODO
+So main evaluates to the Admission Review response, which leads onto the response.
+The response defaults to allowed if the 'response = {' doesn't evaluate all to true
+Note that the last item is a !=
+so if the reason is empty it evalates to false and returns allowed: true back
+to the doc.
 ''')
 	s.send('kubectl apply -f admission-controller.yaml',note='Apply the settings')
 	s.send('''cat > webhook-configuration.yaml <<EOF
@@ -344,7 +349,10 @@ fqdn_matches(str, pattern) {
     not contains(pattern, "*")
     str = pattern
 }
-EOF''',note='Set up an ingress whitelist rego file (TODO: what does it do?)')
+EOF''',note='''Set up an ingress whitelist rego file (TODO: what does it do?)
+
+deny will deny Ingress CREATE actions. How do we add another type?
+''')
 	s.send('kubectl create configmap ingress-whitelist --from-file=ingress-whitelist.rego',note='Create configmap from rego file called ingress-whitelist')
 	s.send('''cat >qa-namespace.yaml << EOF
 apiVersion: v1
