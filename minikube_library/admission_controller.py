@@ -449,6 +449,7 @@ deny[msg] {
 }
 EOF''',note='''Now create a policy that rejects deployments''')
 	s.send('kubectl create configmap no-pods --from-file=no-pods.rego',note='create the configmap that stores the rules')
+	s.send('kubectl get configmap no-pods -o yaml',note='check it was installed correctly (check for errors)')
 	s.send('''cat >deployment-test.yaml << EOF
 apiVersion: extensions/v1beta1
 kind: Deployment
