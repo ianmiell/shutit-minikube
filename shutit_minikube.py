@@ -11,6 +11,7 @@ from minikube_library import client_go
 from minikube_library import kubebuilder
 from minikube_library import operator
 from minikube_library import admission_controller
+from minikube_library import rook
 
 class shutit_minikube(ShutItModule):
 
@@ -52,34 +53,39 @@ class shutit_minikube(ShutItModule):
 		if shutit.cfg[self.module_id]['do_client_go']:
 			shutit.send('minikube start --kubernetes-version=v' + shutit.cfg[self.module_id]['kubernetes_version'])
 			client_go.do_client_go(shutit,  shutit.cfg[self.module_id]['kubernetes_version'])
-		if shutit.cfg[self.module_id]['do_istio']:
+		elif shutit.cfg[self.module_id]['do_istio']:
 			shutit.send('minikube start --memory=4096 --disk-size=30g --kubernetes-version=v' + shutit.cfg[self.module_id]['kubernetes_version'])
 			istio.do_istio(shutit, shutit.cfg[self.module_id]['istio_version'])
 			istio.do_istioinaction(shutit)
-		if shutit.cfg[self.module_id]['do_knative']:
+		elif shutit.cfg[self.module_id]['do_knative']:
 			shutit.send('minikube start --memory=8192 --cpus=4 --disk-size=30g --kubernetes-version=' + shutit.cfg[self.module_id]['kubernetes_version'] + ' --bootstrapper=kubeadm --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"')
 			knative.do_knative(shutit)
-		if shutit.cfg[self.module_id]['do_kubebuilder']:
+		elif shutit.cfg[self.module_id]['do_kubebuilder']:
 			shutit.send('minikube start')
 			kubebuilder.do_kubebuilder(shutit,pw)
-		if shutit.cfg[self.module_id]['do_operator']:
+		elif shutit.cfg[self.module_id]['do_operator']:
 			shutit.send('minikube start')
 			operator.do_operator(shutit,pw)
-		if shutit.cfg[self.module_id]['do_flux']:
+		elif shutit.cfg[self.module_id]['do_flux']:
 			shutit.send('minikube start')
 			flux.do_flux(shutit)
-		if shutit.cfg[self.module_id]['do_admission_controller']:
+		elif shutit.cfg[self.module_id]['do_admission_controller']:
 			shutit.send('minikube start --kubernetes-version=' + shutit.cfg[self.module_id]['kubernetes_version'] + ' --bootstrapper=kubeadm --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook,ValidatingAdmissionWebhook"')
 			admission_controller.do_admission_controller_opa(shutit)
 			# Does not work
 			#admission_controller.do_admission_controller_validating(shutit)
 			admission_controller.do_admission_controller_mutating(shutit)
-		if shutit.cfg[self.module_id]['do_basic']:
+		elif shutit.cfg[self.module_id]['do_rook']:
+			shutit.send('minikube start')
+			rook.do_rook(shutit)
+		elif shutit.cfg[self.module_id]['do_basic']:
 			shutit.send('minikube start')
 			shutit.send('kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')
 			shutit.send('kubectl expose deployment hello-minikube --type=NodePort')
 			shutit.send('kubectl get pod')
 			shutit.send('curl $(minikube service hello-minikube --url)')
+		else:
+			shutit.pause_point('No do_ACTION chosen?')
 
 		shutit.pause_point('done')
 		return True
@@ -94,6 +100,7 @@ class shutit_minikube(ShutItModule):
 		shutit.get_config(self.module_id,'do_flux',boolean=True,default=False)
 		shutit.get_config(self.module_id,'do_operator',boolean=True,default=False)
 		shutit.get_config(self.module_id,'do_admission_controller',boolean=True,default=False)
+		shutit.get_config(self.module_id,'do_rook',boolean=True,default=False)
 		shutit.get_config(self.module_id,'istio_version',default='1.0.3')
 		shutit.get_config(self.module_id,'kubernetes_version',default='1.12.0')
 		shutit.get_config(self.module_id,'download',default=True,boolean=True)
