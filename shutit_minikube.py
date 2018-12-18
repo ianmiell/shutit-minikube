@@ -72,10 +72,15 @@ class shutit_minikube(ShutItModule):
 			flux.do_flux(shutit)
 		elif shutit.cfg[self.module_id]['do_kaniko']:
 			shutit.send('minikube start')
-			shutit.get_config(self.module_id,'docker_username')
-			shutit.get_config(self.module_id,'docker_server')
-			shutit.get_config(self.module_id,'docker_password')
-			shutit.get_config(self.module_id,'docker_email')
+			# Blows up?
+			#shutit.get_config(self.module_id,'docker_username')
+			#shutit.get_config(self.module_id,'docker_server')
+			#shutit.get_config(self.module_id,'docker_password')
+			#shutit.get_config(self.module_id,'docker_email')
+			print(shutit.cfg[self]['docker_username'])
+			print(shutit.cfg[self]['docker_server'])
+			print(shutit.cfg[self]['docker_password'])
+			print(shutit.cfg[self]['docker_email'])
 			kaniko.do_kaniko(shutit, shutit.cfg[self]['docker_username'], shutit.cfg[self]['docker_server'], shutit.cfg[self]['docker_password'], shutit.cfg[self]['docker_email'])
 		elif shutit.cfg[self.module_id]['do_admission_controller']:
 			shutit.send('minikube start --kubernetes-version=' + shutit.cfg[self.module_id]['kubernetes_version'] + ' --bootstrapper=kubeadm --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook,ValidatingAdmissionWebhook"')
@@ -113,6 +118,10 @@ class shutit_minikube(ShutItModule):
 		shutit.get_config(self.module_id,'istio_version',default='1.0.3')
 		shutit.get_config(self.module_id,'kubernetes_version',default='1.12.0')
 		shutit.get_config(self.module_id,'download',default=True,boolean=True)
+		shutit.get_config(self.module_id,'docker_username')
+		shutit.get_config(self.module_id,'docker_server')
+		shutit.get_config(self.module_id,'docker_password')
+		shutit.get_config(self.module_id,'docker_email')
 		return True
 
 def module():
