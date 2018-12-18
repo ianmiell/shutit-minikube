@@ -11,11 +11,8 @@ from minikube_library import client_go
 from minikube_library import kubebuilder
 from minikube_library import operator
 from minikube_library import admission_controller
-<<<<<<< HEAD
 from minikube_library import rook
-=======
 from minikube_library import kaniko
->>>>>>> kaniko
 
 class shutit_minikube(ShutItModule):
 
