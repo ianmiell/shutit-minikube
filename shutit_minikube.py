@@ -11,7 +11,11 @@ from minikube_library import client_go
 from minikube_library import kubebuilder
 from minikube_library import operator
 from minikube_library import admission_controller
+<<<<<<< HEAD
 from minikube_library import rook
+=======
+from minikube_library import kaniko
+>>>>>>> kaniko
 
 class shutit_minikube(ShutItModule):
 
@@ -69,6 +73,13 @@ class shutit_minikube(ShutItModule):
 		elif shutit.cfg[self.module_id]['do_flux']:
 			shutit.send('minikube start')
 			flux.do_flux(shutit)
+		elif shutit.cfg[self.module_id]['do_kaniko']:
+			shutit.send('minikube start')
+			shutit.get_config(self.module_id,'docker_username')
+			shutit.get_config(self.module_id,'docker_server')
+			shutit.get_config(self.module_id,'docker_password')
+			shutit.get_config(self.module_id,'docker_email')
+			kaniko.do_kaniko(shutit, shutit.cfg[self]['docker_username'], shutit.cfg[self]['docker_server'], shutit.cfg[self]['docker_password'], shutit.cfg[self]['docker_email'])
 		elif shutit.cfg[self.module_id]['do_admission_controller']:
 			shutit.send('minikube start --kubernetes-version=' + shutit.cfg[self.module_id]['kubernetes_version'] + ' --bootstrapper=kubeadm --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook,ValidatingAdmissionWebhook"')
 			admission_controller.do_admission_controller_opa(shutit)
@@ -101,6 +112,7 @@ class shutit_minikube(ShutItModule):
 		shutit.get_config(self.module_id,'do_operator',boolean=True,default=False)
 		shutit.get_config(self.module_id,'do_admission_controller',boolean=True,default=False)
 		shutit.get_config(self.module_id,'do_rook',boolean=True,default=False)
+		shutit.get_config(self.module_id,'do_kaniko',boolean=True,default=False)
 		shutit.get_config(self.module_id,'istio_version',default='1.0.3')
 		shutit.get_config(self.module_id,'kubernetes_version',default='1.12.0')
 		shutit.get_config(self.module_id,'download',default=True,boolean=True)
