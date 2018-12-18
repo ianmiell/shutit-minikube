@@ -1,4 +1,5 @@
 def do_rook(s):
+	pass
 	#https://rook.github.io/docs/rook/master/quickstart-toc.html
 	#https://rook.github.io/docs/rook/master/ceph-quickstart.html
 	#https://rook.github.io/docs/rook/master/k8s-pre-reqs.html
