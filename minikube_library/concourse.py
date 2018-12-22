@@ -1193,4 +1193,8 @@ secrets:
 	name = s.send_and_get_output('helm list -q')
 	s.send_until('kubectl get pod | grep -v Running | grep -v NAME | wc -l','0')
 	s.send('nohup kubectl port-forward service/' + name + '-web 8080:8080 &')
+	# Docker build
+	# https://concoursetutorial.com/miscellaneous/docker-images/
+	s.send('git clone https://github.com/starkandwayne/concourse-tutorial.git')
+	s.send('fly --target tutorial login --concourse-url http://127.0.0.1:8080 -u admin -p admin')
 	s.pause_point('deployed on 127.0.0.1:8080?')
