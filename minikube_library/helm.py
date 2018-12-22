@@ -4,4 +4,3 @@ def do_helm(s):
 		s.send('curl https://raw.githubusercontent.com/helm/helm/master/scripts/get | bash')
 	s.send('helm init')
 	s.send('kubectl get pods --namespace kube-system')
-	s.pause_point('helm?')
