@@ -1,0 +1,12 @@
+def do_clair(s):
+	s.send('rm -rf tmp_clair && mkdir -p tmp_clair && cd tmp_clair')
+	s.send('git clone https://github.com/coreos/clair')
+	s.send('cd clair/contrib/helm')
+	s.send('cp clair/values.yaml my_custom_values.yaml')
+	s.send('helm dependency update clair')
+	s.send('helm install clair -f my_custom_values.yaml')
+	s.send('nohup kubectl port-forward service/listening-bronco-clair 6060:6060 &')
+	s.send('nohup kubectl port-forward service/listening-bronco-clair 6061:6061 &')
+	s.send('docker pull alpine:latest')
+	s.send('docker run -i --rm --name coreos-clair-client -v /var/run/docker.sock:/var/run/docker.sock:ro jorgeandrada/coreos-clair-client:latest analyze-local-images -color always -endpoint "http://127.0.0.1:6060" alpine:latest')
+	s.pause_point('claie')
