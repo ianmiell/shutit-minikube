@@ -11,7 +11,7 @@ def do_flux(s, pw):
 	s.send('mv fluxctl_linux_amd64 fluxctl')
 	if not s.command_available('helm'):
 		# https://docs.helm.sh/using_helm/#installing-the-helm-client
-		s.multisend('curl https://raw.githubusercontent.com/helm/helm/master/scripts/get | sudo bash',{'assword':pw}})
+		s.multisend('curl https://raw.githubusercontent.com/helm/helm/master/scripts/get | sudo bash',{'assword':pw})
 	# https://github.com/weaveworks/flux/blob/master/site/helm-get-started.md
 	# https://github.com/weaveworks/flux/blob/master/site/fluxctl.md
 	s.send('helm init --skip-refresh --upgrade --service-account tiller')
