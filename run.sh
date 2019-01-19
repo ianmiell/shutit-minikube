@@ -24,6 +24,8 @@ Where BUILD is one of:
 - kubebuilder              - Kubebuilder
 - concourse                - Deploys concourse CI
 - clair                    - Deploys Clair
+- jenkinsx                 - Deploys Jenkinsx
+- image_policy_webhook     - Deploys ImagePolicyWebhook
 
 END
 }
@@ -169,6 +171,54 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_concourse no \
 		-s techniques.shutit_minikube.shutit_minikube do_clair yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
+		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
+elif [[ ${BUILD} = 'jenkinsx' ]]
+then
+	git submodule init
+	git submodule update
+	$SHUTIT build --echo -d bash \
+		-s techniques.shutit_minikube.shutit_minikube download yes \
+		-s techniques.shutit_minikube.shutit_minikube do_knative no \
+		-s techniques.shutit_minikube.shutit_minikube do_istio no \
+		-s techniques.shutit_minikube.shutit_minikube do_basic no \
+		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
+		-s techniques.shutit_minikube.shutit_minikube do_concourse no \
+		-s techniques.shutit_minikube.shutit_minikube do_clair no \
+		-s techniques.shutit_minikube.shutit_minikube do_jenkinsx yes \
+		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
+		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
+elif [[ ${BUILD} = 'grafeas' ]]
+then
+	git submodule init
+	git submodule update
+	$SHUTIT build --echo -d bash \
+		-s techniques.shutit_minikube.shutit_minikube download yes \
+		-s techniques.shutit_minikube.shutit_minikube do_knative no \
+		-s techniques.shutit_minikube.shutit_minikube do_istio no \
+		-s techniques.shutit_minikube.shutit_minikube do_basic no \
+		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
+		-s techniques.shutit_minikube.shutit_minikube do_concourse no \
+		-s techniques.shutit_minikube.shutit_minikube do_clair no \
+		-s techniques.shutit_minikube.shutit_minikube do_jenkinsx no \
+		-s techniques.shutit_minikube.shutit_minikube do_grafeas yes \
+		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
+		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
+elif [[ ${BUILD} = 'image_policy_webhook' ]]
+then
+	git submodule init
+	git submodule update
+	$SHUTIT build --echo -d bash \
+		-s techniques.shutit_minikube.shutit_minikube download yes \
+		-s techniques.shutit_minikube.shutit_minikube do_knative no \
+		-s techniques.shutit_minikube.shutit_minikube do_istio no \
+		-s techniques.shutit_minikube.shutit_minikube do_basic no \
+		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
+		-s techniques.shutit_minikube.shutit_minikube do_concourse no \
+		-s techniques.shutit_minikube.shutit_minikube do_clair no \
+		-s techniques.shutit_minikube.shutit_minikube do_jenkinsx no \
+		-s techniques.shutit_minikube.shutit_minikube do_grafeas no \
+		-s techniques.shutit_minikube.shutit_minikube do_image_policy_webhook yes \
+		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3'
 		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
 elif [[ ${BUILD} = 'basic' ]]
 then
