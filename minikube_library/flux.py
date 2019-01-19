@@ -14,11 +14,12 @@ def do_flux(s, pw):
 		s.multisend('curl https://raw.githubusercontent.com/helm/helm/master/scripts/get | sudo bash',{'assword':pw})
 	# https://github.com/weaveworks/flux/blob/master/site/helm-get-started.md
 	# https://github.com/weaveworks/flux/blob/master/site/fluxctl.md
+	s.send('kubectl -n kube-system create sa tiller')
+	s.send('kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller')
 	s.send('helm init --skip-refresh --upgrade --service-account tiller')
 	s.send('helm repo add weaveworks https://weaveworks.github.io/flux')
 	s.send('kubectl apply -f https://raw.githubusercontent.com/weaveworks/flux/master/deploy-helm/flux-helm-release-crd.yaml')
 	s.send('helm upgrade -i flux --set helmOperator.create=true --set helmOperator.createCRD=false --set git.url=git@github.com:imiell/flux-get-started --namespace flux weaveworks/flux')
-	s.send('oc adm policy add-scc-to-user anyuid system:serviceaccount:flux:flux')
 	s.send('export FLUX_FORWARD_NAMESPACE=flux')
 	s.send('fluxctl identity')
 	s.pause_point('add flux shutit key above to github and continue https://github.com/YOURUSER/flux-get-started/settings/keys/new')
