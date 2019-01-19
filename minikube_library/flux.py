@@ -1,4 +1,4 @@
-def do_flux(shutit):
+def do_flux(s, pw):
 	#https://github.com/weaveworks/flux/blob/master/site/get-started.md
 	s.send('rm -rf ~/minikube_tmp/flux')
 	s.send('mkdir -p ~/minikube_tmp/flux')
@@ -6,13 +6,12 @@ def do_flux(shutit):
 	#s.send('git clone https://github.com/weaveworks/flux')
 	#s.send('cd flux')
 	#s.pause_point('''go to: Now you can go ahead and edit Flux's deployment manifest. At the very least you will have to change the --git-url parameter to point to the config repository for the workloads you want Flux to deploy for you. You are going to need access to this repository.''')
-
 	s.send('wget https://github.com/weaveworks/flux/releases/download/1.9.0/fluxctl_linux_amd64')
 	s.send('chmod +x fluxctl_linux_amd64')
 	s.send('mv fluxctl_linux_amd64 fluxctl')
 	if not s.command_available('helm'):
 		# https://docs.helm.sh/using_helm/#installing-the-helm-client
-		s.send('curl https://raw.githubusercontent.com/helm/helm/master/scripts/get | bash')
+		s.multisend('curl https://raw.githubusercontent.com/helm/helm/master/scripts/get | sudo bash',{'assword':pw}})
 	# https://github.com/weaveworks/flux/blob/master/site/helm-get-started.md
 	# https://github.com/weaveworks/flux/blob/master/site/fluxctl.md
 	s.send('helm init --skip-refresh --upgrade --service-account tiller')

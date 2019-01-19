@@ -94,10 +94,10 @@ spec:
 			kubebuilder.do_kubebuilder(shutit,pw)
 		elif shutit.cfg[self.module_id]['do_operator']:
 			shutit.send('minikube start')
-			operator.do_operator(shutit,pw)
+			operator.do_operator(shutit, pw)
 		elif shutit.cfg[self.module_id]['do_flux']:
 			shutit.send('minikube start')
-			flux.do_flux(shutit)
+			flux.do_flux(shutit, pw)
 		elif shutit.cfg[self.module_id]['do_kaniko']:
 			shutit.send('minikube start')
 			# Blows up?
