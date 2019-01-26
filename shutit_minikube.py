@@ -20,6 +20,7 @@ from minikube_library import jenkinsx
 from minikube_library import grafeas
 from minikube_library import image_policy_webhook
 from minikube_library import flux
+from minikube_library import cilium
 
 class shutit_minikube(ShutItModule):
 
@@ -136,6 +137,9 @@ spec:
 		elif shutit.cfg[self.module_id]['do_image_policy_webhook']:
 			shutit.send('minikube start')
 			image_policy_webhook.do_image_policy_webhook(shutit)
+		elif shutit.cfg[self.module_id]['do_colium']:
+			shutit.send('minikube start --network-plugin=cni --extra-config=kubelet.network-plugin=cni --memory=5120')
+			cilium.do_cilium(shutit)
 		elif shutit.cfg[self.module_id]['do_basic']:
 			shutit.send('minikube start')
 			shutit.send('kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')
@@ -149,7 +153,7 @@ spec:
 
 
 	def get_config(self, shutit):
-		for do in ('basic', 'istio', 'knative', 'client_go','kubebuilder','flux','operator','admission_controller','rook','kaniko','concourse','clair','jenkinsx','grafeas','image_policy_webhook'):
+		for do in ('basic', 'istio', 'knative', 'client_go','kubebuilder','flux','operator','admission_controller','rook','kaniko','concourse','clair','jenkinsx','grafeas','image_policy_webhook','cilium'):
 			shutit.get_config(self.module_id,'do_' + do,boolean=True,default=False)
 		shutit.get_config(self.module_id,'istio_version',default='1.0.3')
 		shutit.get_config(self.module_id,'kubernetes_version',default='1.12.0')
