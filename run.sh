@@ -25,8 +25,8 @@ Where BUILD is one of:
 - concourse                - Deploys concourse CI
 - clair                    - Deploys Clair
 - jenkinsx                 - Deploys Jenkinsx
-- cilium                   - Deploys cilium
 - image_policy_webhook     - Deploys ImagePolicyWebhook
+- cilium                   - Deploys cilium
 
 END
 }
