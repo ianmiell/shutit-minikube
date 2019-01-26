@@ -227,7 +227,7 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_jenkinsx no \
 		-s techniques.shutit_minikube.shutit_minikube do_grafeas yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant
+		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
 elif [[ ${BUILD} = 'image_policy_webhook' ]]
@@ -246,9 +246,8 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_grafeas no \
 		-s techniques.shutit_minikube.shutit_minikube do_image_policy_webhook yes \
 		-s techniques.shutit_minikube.shutit_minikube do_cilium no \
-		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3'
-		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
-		-m shutit-library/vagrant
+		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
+		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
 elif [[ ${BUILD} = 'cilium' ]]
@@ -267,9 +266,7 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_grafeas no \
 		-s techniques.shutit_minikube.shutit_minikube do_image_policy_webhook no \
 		-s techniques.shutit_minikube.shutit_minikube do_cilium yes \
-		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3'
-		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
-		-m shutit-library/vagrant
+		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
 elif [[ ${BUILD} = 'basic' ]]
