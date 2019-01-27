@@ -138,7 +138,8 @@ spec:
 			shutit.send('minikube start')
 			image_policy_webhook.do_image_policy_webhook(shutit)
 		elif shutit.cfg[self.module_id]['do_cilium']:
-			shutit.send('minikube start --network-plugin=cni --extra-config=kubelet.network-plugin=cni --memory=5120')
+			#shutit.send('minikube start --kubernetes-version=v1.12.0 --network-plugin=cni --extra-config=kubelet.network-plugin=cni --memory=5120')
+			shutit.send('minikube start --kubernetes-version=v1.12.0  --memory=5120')
 			cilium.do_cilium(shutit)
 		elif shutit.cfg[self.module_id]['do_basic']:
 			shutit.send('minikube start')
