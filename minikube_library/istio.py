@@ -230,3 +230,4 @@ def do_istioinaction(s):
 	s.pause_point('telnet $(minikube ip) ' + TCP_PORT,note='connect to tcp service')
 	# 4.4.2 - traffic routing with SNI and TLS - TODO
 	s.pause_point('done ch4')
+
