@@ -1,10 +1,9 @@
 def do_cilium(s):
 	# FROM: https://cilium.readthedocs.io/en/stable/gettingstarted/minikube/
 	s.send('kubectl create -n kube-system -f https://raw.githubusercontent.com/cilium/cilium/1.3.2/examples/kubernetes/addons/etcd/standalone-etcd.yaml')
-	s.send_until('kubectl get pods -n kube-system | grep -v NAMESPACE | grep cilium | wc -l','1')
-	s.send_until('kubectl get pods -n kube-system | grep -v NAMESPACE | grep -v Running | wc -l','0')
-	# v1.11
-	s.send('kubectl create -f https://raw.githubusercontent.com/cilium/cilium/1.3.2/examples/kubernetes/1.11/cilium.yaml')
+	s.send_until('kubectl get pods -n kube-system | grep -v NAME | grep cilium | wc -l','1')
+	s.send_until('kubectl get pods -n kube-system | grep -v NAME | grep -v Running | wc -l','0')
+	s.send('kubectl create -f https://raw.githubusercontent.com/cilium/cilium/1.3.2/examples/kubernetes/1.12/cilium.yaml')
 	s.send_until("kubectl get daemonsets -n kube-system | grep cilium | awk '{print $3'}",'1')
 	s.send('kubectl create -f https://raw.githubusercontent.com/cilium/cilium/1.3.2/examples/minikube/http-sw-app.yaml')
 	s.send_until('kubectl exec xwing -- curl -s -XPOST deathstar.default.svc.cluster.local/v1/request-landing','Ship landed')
@@ -29,7 +28,7 @@ spec:
     toPorts:
     - ports:
       - port: "80"
-        protocol: TCP''')
+        protocol: TCP'''
 	s.send('kubectl create -f https://raw.githubusercontent.com/cilium/cilium/1.3.2/examples/minikube/sw_l3_l4_policy.yaml')
-	s.pause_point('SHOULD HANG: kubectl exec xwing -- curl -s -XPOST deathstar.default.svc.cluster.local/v1/request-landing'):w
+	s.pause_point('SHOULD HANG: kubectl exec xwing -- curl -s -XPOST deathstar.default.svc.cluster.local/v1/request-landing')
 

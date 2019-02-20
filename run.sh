@@ -44,7 +44,9 @@ then
 	    -s techniques.shutit_minikube.shutit_minikube do_flux no \
 	    -s techniques.shutit_minikube.shutit_minikube do_kaniko yes \
 	    -s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-	    -m shutit-library/vagrant -m shutit-library/virtualization "$@"
+	    -m shutit-library/vagrant \
+		-m shutit-library/virtualization \
+		"$@"
 elif [[ ${BUILD} = 'knative' ]]
 then
 	git submodule init
@@ -55,7 +57,9 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_istio no \
 		-s techniques.shutit_minikube.shutit_minikube do_basic no \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
+		-m shutit-library/vagrant
+		-m shutit-library/virtualization \
+		"$@"
 elif [[ ${BUILD} = 'flux' ]]
 then
 	git submodule init
@@ -67,7 +71,9 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_basic no \
 		-s techniques.shutit_minikube.shutit_minikube do_flux yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
+		-m shutit-library/vagrant
+		-m shutit-library/virtualization \
+		"$@"
 elif [[ ${BUILD} = 'rook' ]]
 then
 	git submodule init
@@ -82,7 +88,9 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_admission_controller no \
 		-s techniques.shutit_minikube.shutit_minikube do_rook yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.12.0' \
-		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
+		-m shutit-library/vagrant
+		-m shutit-library/virtualization \
+		"$@"
 elif [[ ${BUILD} = 'admission_controller' ]]
 then
 	git submodule init
@@ -96,7 +104,9 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
 		-s techniques.shutit_minikube.shutit_minikube do_admission_controller yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.12.0' \
-		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
+		-m shutit-library/vagrant
+		-m shutit-library/virtualization \
+		"$@"
 elif [[ ${BUILD} = 'client_go' ]]
 then
 	git submodule init
@@ -108,7 +118,9 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_istio no \
 		-s techniques.shutit_minikube.shutit_minikube do_basic no \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version '1.10.0' \
-		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
+		-m shutit-library/vagrant
+		-m shutit-library/virtualization \
+		"$@"
 elif [[ ${BUILD} = 'istio' ]]
 then
 	git submodule init
@@ -120,7 +132,9 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_istio yes \
 		-s techniques.shutit_minikube.shutit_minikube do_basic no \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version '1.10.0' \
-		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
+		-m shutit-library/vagrant
+		-m shutit-library/virtualization \
+		"$@"
 elif [[ ${BUILD} = 'operator' ]]
 then
 	git submodule init
@@ -133,7 +147,9 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
 		-s techniques.shutit_minikube.shutit_minikube do_operator yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
+		-m shutit-library/vagrant
+		-m shutit-library/virtualization \
+		"$@"
 elif [[ ${BUILD} = 'kubebuilder' ]]
 then
 	git submodule init
@@ -145,7 +161,9 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_basic no \
 		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
+		-m shutit-library/vagrant
+		-m shutit-library/virtualization \
+		"$@"
 elif [[ ${BUILD} = 'concourse' ]]
 then
 	git submodule init
@@ -158,7 +176,9 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
 		-s techniques.shutit_minikube.shutit_minikube do_concourse yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
+		-m shutit-library/vagrant
+		-m shutit-library/virtualization \
+		"$@"
 elif [[ ${BUILD} = 'clair' ]]
 then
 	git submodule init
@@ -172,7 +192,9 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_concourse no \
 		-s techniques.shutit_minikube.shutit_minikube do_clair yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
+		-m shutit-library/vagrant
+		-m shutit-library/virtualization \
+		"$@"
 elif [[ ${BUILD} = 'jenkinsx' ]]
 then
 	git submodule init
@@ -187,7 +209,9 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_clair no \
 		-s techniques.shutit_minikube.shutit_minikube do_jenkinsx yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
+		-m shutit-library/vagrant
+		-m shutit-library/virtualization \
+		"$@"
 elif [[ ${BUILD} = 'grafeas' ]]
 then
 	git submodule init
@@ -203,7 +227,9 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_jenkinsx no \
 		-s techniques.shutit_minikube.shutit_minikube do_grafeas yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
+		-m shutit-library/vagrant \
+		-m shutit-library/virtualization \
+		"$@"
 elif [[ ${BUILD} = 'image_policy_webhook' ]]
 then
 	git submodule init
@@ -219,9 +245,12 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_jenkinsx no \
 		-s techniques.shutit_minikube.shutit_minikube do_grafeas no \
 		-s techniques.shutit_minikube.shutit_minikube do_image_policy_webhook yes \
-		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3'
-		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
-elif [[ ${BUILD} = 'image_policy_webhook' ]]
+		-s techniques.shutit_minikube.shutit_minikube do_cilium no \
+		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
+		-m shutit-library/vagrant \
+		-m shutit-library/virtualization \
+		"$@"
+elif [[ ${BUILD} = 'cilium' ]]
 then
 	git submodule init
 	git submodule update
@@ -237,8 +266,9 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_grafeas no \
 		-s techniques.shutit_minikube.shutit_minikube do_image_policy_webhook no \
 		-s techniques.shutit_minikube.shutit_minikube do_cilium yes \
-		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3'
-		-m shutit-library/vagrant -m shutit-library/virtualization "$@"
+		-m shutit-library/vagrant \
+		-m shutit-library/virtualization \
+		"$@"
 elif [[ ${BUILD} = 'basic' ]]
 then
 	${SHUTIT} build --echo -d bash -m shutit-library/vagrant -m shutit-library/virtualization "$@"
