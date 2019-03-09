@@ -102,7 +102,7 @@ def do_istioinaction(s):
 	s.send('kill %2')
 
 	# CHAPTER 3
-	# 3.3 Envoy in action
+	# 4.3 Envoy in action
 	# p.87
 	s.send('''eval $(minikube docker-env)''',note='Move to docker environment and then pull images')
 	s.send('docker ps')
@@ -134,7 +134,7 @@ def do_istioinaction(s):
 	s.send('docker run -d --name proxy --link httpbin istioinaction/envoy:v1.7.0 envoy -c /etc/envoy/simple_retry.yaml',note='Run again, but change retry policy')
 	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15001/status/500',note='create a 500 error by calling /status/500')
 	s.send('docker run -it --rm --link proxy tutum/curl curl -X GET http://proxy:15000/stats | grep retry',note='See what happened from the stats?')
-	# CHAPTER 4
+	# CHAPTER 5, p.95
 	# p.103
 	INGRESS_POD = s.send_and_get_output('kubectl get pod -n istio-system | grep ingressgateway | cut -d ' ' -f 1',note='Get ingress gateway pod')
 	s.send('kubectl -n istio-system exec ' + INGRESS_POD + ' ps aux',note='Show processes running within gateway pod')
@@ -213,7 +213,7 @@ def do_istioinaction(s):
 	s.send('curl -H "Host: apiserver.istioinaction.io" https://apiserver.istioinaction.io:' + HTTPS_PORT + '/api/products --cacert chapter-files/chapter4/certs/2_intermediate/certs/ca-chain.cert.pem --resolve apiserver.istioinaction.io:' + HTTPS_PORT + ':' + HTTPS_HOST,note='Same call as before should be rejected, as we are only passing the CA cert chain to the curl command. Need to pass the client cert and private key with the --cert and --key parameters as per next command')
 	# p.122
 	s.send('curl -H "Host: apiserver.istioinaction.io" https://apiserver.istioinaction.io:' + HTTPS_PORT + '/api/products --cacert chapter-files/chapter4/certs/2_intermediate/certs/ca-chain.cert.pem --resolve apiserver.istioinaction.io:' + HTTPS_PORT + ':' + HTTPS_HOST + ' --cert chapter-files/chapter4/certs/4_client/certs/apiserver.istioinaction.io.cert.pem --key chapter-files/chapter4/certs/4_client/private/apiserver.istioinaction.io.key.pem',note='should see a 200 and JSON')
-	# 4.3.4 Serving multuiple virtual hosts with TLS
+	# 5.3.4 Serving multuiple virtual hosts with TLS
 	s.send('kubectl create -n istio-system secret tls catalog-ingressgateway-certs --key chapter-files/chapter4/certs2/3_application/private/catalog.istioinaction.io.key.pem --cert chapter-files/chapter4/certs2/3_application/certs/catalog.istioinaction.io.cert.pem',note="Create extra certs and keys for the multiple virtual hosts")
 	s.send('kubectl replace -f chapter-files/chapter4/istio-ingressgateway-deployment-catalog-certs.yaml',note='Create gateway for multiple tls certs')
 	s.send('kubectl replace -f chapter-files/chapter4/coolstore-gw-multi-tls.yaml',note='Update gateway configuration')
@@ -228,6 +228,7 @@ def do_istioinaction(s):
 	s.send('kubectl create -f chapter-files/chapter4/echo-vs.yaml',note='Now port is exposed on the ingress gateway, route traffic to the echo service')
 	TCP_PORT = s.send_and_get_output("""kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="tcp")].nodePort}'""",note='Get tcp port from gateway spec')
 	s.pause_point('telnet $(minikube ip) ' + TCP_PORT,note='connect to tcp service')
-	# 4.4.2 - traffic routing with SNI and TLS - TODO
-	s.pause_point('done ch4')
+	# 5.4.2 - traffic routing with SNI and TLS - TODO
+	s.pause_point('done ch5')
 
+	# CHAPTER 6
