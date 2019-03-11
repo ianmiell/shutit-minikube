@@ -271,7 +271,10 @@ then
 		"$@"
 elif [[ ${BUILD} = 'basic' ]]
 then
-	${SHUTIT} build --echo -d bash -m shutit-library/vagrant -m shutit-library/virtualization "$@"
+	${SHUTIT} build --echo -d bash \
+		-s techniques.shutit_minikube.shutit_minikube do_basic yes \
+		-m shutit-library/vagrant \
+		-m shutit-library/virtualization "$@"
 else
 	usage
 	exit 1
