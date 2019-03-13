@@ -116,6 +116,9 @@ spec:
 		elif shutit.cfg[self.module_id]['do_rook']:
 			shutit.send('minikube start')
 			rook.do_rook(shutit)
+		elif shutit.cfg[self.module_id]['do_helm']:
+			self.do_rbac(shutit)
+			helm.do_helm(shutit)
 		elif shutit.cfg[self.module_id]['do_concourse']:
 			self.do_rbac(shutit)
 			# Needs helm
@@ -154,7 +157,23 @@ spec:
 
 
 	def get_config(self, shutit):
-		for do in ('basic', 'istio', 'knative', 'client_go','kubebuilder','flux','operator','admission_controller','rook','kaniko','concourse','clair','jenkinsx','grafeas','image_policy_webhook','cilium'):
+		for do in ('basic',
+		           'istio',
+		           'knative',
+		           'client_go',
+		           'kubebuilder',
+		           'flux',
+		           'operator',
+		           'admission_controller',
+		           'rook',
+		           'kaniko',
+		           'concourse',
+		           'clair',
+		           'jenkinsx',
+		           'grafeas',
+		           'image_policy_webhook',
+		           'cilium',
+		           'helm'):
 			shutit.get_config(self.module_id,'do_' + do,boolean=True,default=False)
 		shutit.get_config(self.module_id,'istio_version',default='1.0.3')
 		shutit.get_config(self.module_id,'kubernetes_version',default='1.12.0')

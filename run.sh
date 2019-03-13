@@ -27,6 +27,7 @@ Where BUILD is one of:
 - jenkinsx                 - Deploys Jenkinsx
 - image_policy_webhook     - Deploys ImagePolicyWebhook
 - cilium                   - Deploys cilium
+- helm                     - Deploys Helm
 
 END
 }
@@ -266,6 +267,26 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_grafeas no \
 		-s techniques.shutit_minikube.shutit_minikube do_image_policy_webhook no \
 		-s techniques.shutit_minikube.shutit_minikube do_cilium yes \
+		-m shutit-library/vagrant \
+		-m shutit-library/virtualization \
+		"$@"
+elif [[ ${BUILD} = 'helm' ]]
+then
+	git submodule init
+	git submodule update
+	$SHUTIT build --echo -d bash \
+		-s techniques.shutit_minikube.shutit_minikube download yes \
+		-s techniques.shutit_minikube.shutit_minikube do_knative no \
+		-s techniques.shutit_minikube.shutit_minikube do_istio no \
+		-s techniques.shutit_minikube.shutit_minikube do_basic no \
+		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
+		-s techniques.shutit_minikube.shutit_minikube do_concourse no \
+		-s techniques.shutit_minikube.shutit_minikube do_clair no \
+		-s techniques.shutit_minikube.shutit_minikube do_jenkinsx no \
+		-s techniques.shutit_minikube.shutit_minikube do_grafeas no \
+		-s techniques.shutit_minikube.shutit_minikube do_image_policy_webhook no \
+		-s techniques.shutit_minikube.shutit_minikube do_cilium no \
+		-s techniques.shutit_minikube.shutit_minikube do_helm yes \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
