@@ -19,7 +19,13 @@ rules:
   resources: ["*"]
   verbs: ["*"]''')
 	s.send('kubectl create -f ns-role-tiller.yaml')
-	s.send_file('ns-role-binding.yaml','''kind: RoleBinding
+	s.send_file('ns-role-binding.yaml','''apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tiller-confined-sa
+  namespace: tiller-confined
+---
+kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: tiller-binding
@@ -34,6 +40,43 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io''')
 	s.send('kubectl create -f ns-role-binding.yaml')
 	s.send('helm init --service-account tiller-confined-sa --tiller-namespace tiller-confined')
+
+	s.send('kubectl create namespace tiller-confined2')
+	s.send('kubectl create serviceaccount tiller-confined2')
+	s.send_file('ns-role-tiller2.yaml','''apiVersion: v1
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tiller-nsmanager2
+  namespace: tiller-confined2
+rules:
+- apiGroups: ["", "batch", "extensions", "apps"]
+  resources: ["*"]
+  verbs: ["*"]''')
+	s.send_file('ns-role-binding2.yaml','''apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tiller-confined-sa2
+  namespace: tiller-confined2
+---
+apiVersion: v1
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tiller-binding2
+  namespace: tiller-confined2
+subjects:
+- kind: ServiceAccount
+  name: tiller-confined-sa2
+  namespace: tiller-confined2
+roleRef:
+  kind: Role
+  name: tiller-nsmanager2
+  apiGroup: rbac.authorization.k8s.io''')
+	s.send('kubectl create -f ns-role-binding2.yaml')
+	s.send('helm init --service-account tiller-confined-sa2 --tiller-namespace tiller-confined2')
+	s.pause_point('')
+
 
 	# CLUSTER LEVEL HELM
 	# Create cluster admin role
@@ -57,7 +100,7 @@ subjects:
     namespace: kube-system''')
 
 	s.send('kubectl create -f rbac-config.yaml')
-	s.send('helm init --service-account tiller')
-
-	s.send('kubectl get pods --namespace kube-system')
+	s.send('kubectl get pods --all-namespaces')
+	s.send('helm init --service-account tiller --tiller-namespace kube-system')
+	s.send('kubectl get pods --all-namespaces')
 	s.pause_point('')
