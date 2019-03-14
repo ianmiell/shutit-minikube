@@ -14,6 +14,7 @@ from minikube_library import admission_controller
 from minikube_library import rook
 from minikube_library import kaniko
 from minikube_library import helm
+from minikube_library import helm_flux
 from minikube_library import concourse
 from minikube_library import clair
 from minikube_library import jenkinsx
@@ -150,6 +151,10 @@ spec:
 			shutit.send('kubectl expose deployment hello-minikube --type=NodePort')
 			shutit.send('kubectl get pod')
 			shutit.send('curl $(minikube service hello-minikube --url)')
+		elif shutit.cfg[self.module_id]['do_helm_flux']:
+			shutit.send('minikube start --memory=5120')
+			self.do_rbac(shutit)
+			helm_flux.do_helm_flux(shutit)
 		else:
 			shutit.pause_point('No do_ACTION chosen?')
 		shutit.pause_point('all done')
@@ -173,7 +178,8 @@ spec:
 		           'grafeas',
 		           'image_policy_webhook',
 		           'cilium',
-		           'helm'):
+		           'helm',
+		           'helm_flux'):
 			shutit.get_config(self.module_id,'do_' + do,boolean=True,default=False)
 		shutit.get_config(self.module_id,'istio_version',default='1.0.3')
 		shutit.get_config(self.module_id,'kubernetes_version',default='1.12.0')

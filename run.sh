@@ -28,6 +28,7 @@ Where BUILD is one of:
 - image_policy_webhook     - Deploys ImagePolicyWebhook
 - cilium                   - Deploys cilium
 - helm                     - Deploys Helm
+- helm_flux                - Deploys Helm & Flux and namespace-specific helm and flux
 
 END
 }
@@ -38,11 +39,6 @@ then
 	git submodule init
 	git submodule update
 	$SHUTIT build --echo -d bash \
-	    -s techniques.shutit_minikube.shutit_minikube download yes \
-	    -s techniques.shutit_minikube.shutit_minikube do_knative no \
-	    -s techniques.shutit_minikube.shutit_minikube do_istio no \
-	    -s techniques.shutit_minikube.shutit_minikube do_basic no \
-	    -s techniques.shutit_minikube.shutit_minikube do_flux no \
 	    -s techniques.shutit_minikube.shutit_minikube do_kaniko yes \
 	    -s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
 	    -m shutit-library/vagrant \
@@ -53,10 +49,7 @@ then
 	git submodule init
 	git submodule update
 	$SHUTIT build --echo -d bash \
-		-s techniques.shutit_minikube.shutit_minikube download yes \
 		-s techniques.shutit_minikube.shutit_minikube do_knative yes \
-		-s techniques.shutit_minikube.shutit_minikube do_istio no \
-		-s techniques.shutit_minikube.shutit_minikube do_basic no \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
 		-m shutit-library/vagrant
 		-m shutit-library/virtualization \
@@ -66,10 +59,6 @@ then
 	git submodule init
 	git submodule update
 	$SHUTIT build --echo -d bash \
-		-s techniques.shutit_minikube.shutit_minikube download yes \
-		-s techniques.shutit_minikube.shutit_minikube do_knative no \
-		-s techniques.shutit_minikube.shutit_minikube do_istio no \
-		-s techniques.shutit_minikube.shutit_minikube do_basic no \
 		-s techniques.shutit_minikube.shutit_minikube do_flux yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
 		-m shutit-library/vagrant
@@ -81,12 +70,6 @@ then
 	git submodule update
 	$SHUTIT build -d bash \
 		-w \
-		-s techniques.shutit_minikube.shutit_minikube download yes \
-		-s techniques.shutit_minikube.shutit_minikube do_knative no \
-		-s techniques.shutit_minikube.shutit_minikube do_istio no \
-		-s techniques.shutit_minikube.shutit_minikube do_basic no \
-		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
-		-s techniques.shutit_minikube.shutit_minikube do_admission_controller no \
 		-s techniques.shutit_minikube.shutit_minikube do_rook yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.12.0' \
 		-m shutit-library/vagrant
@@ -98,11 +81,6 @@ then
 	git submodule update
 	$SHUTIT build -d bash \
 		-w \
-		-s techniques.shutit_minikube.shutit_minikube download yes \
-		-s techniques.shutit_minikube.shutit_minikube do_knative no \
-		-s techniques.shutit_minikube.shutit_minikube do_istio no \
-		-s techniques.shutit_minikube.shutit_minikube do_basic no \
-		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
 		-s techniques.shutit_minikube.shutit_minikube do_admission_controller yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.12.0' \
 		-m shutit-library/vagrant
@@ -113,11 +91,7 @@ then
 	git submodule init
 	git submodule update
 	$SHUTIT build --echo -d bash \
-		-s techniques.shutit_minikube.shutit_minikube download yes \
-		-s techniques.shutit_minikube.shutit_minikube do_knative no \
 		-s techniques.shutit_minikube.shutit_minikube do_client_go yes \
-		-s techniques.shutit_minikube.shutit_minikube do_istio no \
-		-s techniques.shutit_minikube.shutit_minikube do_basic no \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version '1.10.0' \
 		-m shutit-library/vagrant
 		-m shutit-library/virtualization \
@@ -128,10 +102,7 @@ then
 	git submodule update
 	$SHUTIT build --echo -d bash \
 		-w \
-		-s techniques.shutit_minikube.shutit_minikube download yes \
-		-s techniques.shutit_minikube.shutit_minikube do_knative no \
 		-s techniques.shutit_minikube.shutit_minikube do_istio yes \
-		-s techniques.shutit_minikube.shutit_minikube do_basic no \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version '1.10.0' \
 		-m shutit-library/vagrant
 		-m shutit-library/virtualization \
@@ -141,11 +112,6 @@ then
 	git submodule init
 	git submodule update
 	$SHUTIT build --echo -d bash \
-		-s techniques.shutit_minikube.shutit_minikube download yes \
-		-s techniques.shutit_minikube.shutit_minikube do_knative no \
-		-s techniques.shutit_minikube.shutit_minikube do_istio no \
-		-s techniques.shutit_minikube.shutit_minikube do_basic no \
-		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
 		-s techniques.shutit_minikube.shutit_minikube do_operator yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
 		-m shutit-library/vagrant
@@ -156,10 +122,6 @@ then
 	git submodule init
 	git submodule update
 	$SHUTIT build --echo -d bash \
-		-s techniques.shutit_minikube.shutit_minikube download yes \
-		-s techniques.shutit_minikube.shutit_minikube do_knative no \
-		-s techniques.shutit_minikube.shutit_minikube do_istio no \
-		-s techniques.shutit_minikube.shutit_minikube do_basic no \
 		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
 		-m shutit-library/vagrant
@@ -170,11 +132,6 @@ then
 	git submodule init
 	git submodule update
 	$SHUTIT build --echo -d bash \
-		-s techniques.shutit_minikube.shutit_minikube download yes \
-		-s techniques.shutit_minikube.shutit_minikube do_knative no \
-		-s techniques.shutit_minikube.shutit_minikube do_istio no \
-		-s techniques.shutit_minikube.shutit_minikube do_basic no \
-		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
 		-s techniques.shutit_minikube.shutit_minikube do_concourse yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
 		-m shutit-library/vagrant
@@ -185,12 +142,6 @@ then
 	git submodule init
 	git submodule update
 	$SHUTIT build --echo -d bash \
-		-s techniques.shutit_minikube.shutit_minikube download yes \
-		-s techniques.shutit_minikube.shutit_minikube do_knative no \
-		-s techniques.shutit_minikube.shutit_minikube do_istio no \
-		-s techniques.shutit_minikube.shutit_minikube do_basic no \
-		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
-		-s techniques.shutit_minikube.shutit_minikube do_concourse no \
 		-s techniques.shutit_minikube.shutit_minikube do_clair yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
 		-m shutit-library/vagrant
@@ -201,13 +152,6 @@ then
 	git submodule init
 	git submodule update
 	$SHUTIT build --echo -d bash \
-		-s techniques.shutit_minikube.shutit_minikube download yes \
-		-s techniques.shutit_minikube.shutit_minikube do_knative no \
-		-s techniques.shutit_minikube.shutit_minikube do_istio no \
-		-s techniques.shutit_minikube.shutit_minikube do_basic no \
-		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
-		-s techniques.shutit_minikube.shutit_minikube do_concourse no \
-		-s techniques.shutit_minikube.shutit_minikube do_clair no \
 		-s techniques.shutit_minikube.shutit_minikube do_jenkinsx yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
 		-m shutit-library/vagrant
@@ -218,14 +162,6 @@ then
 	git submodule init
 	git submodule update
 	$SHUTIT build --echo -d bash \
-		-s techniques.shutit_minikube.shutit_minikube download yes \
-		-s techniques.shutit_minikube.shutit_minikube do_knative no \
-		-s techniques.shutit_minikube.shutit_minikube do_istio no \
-		-s techniques.shutit_minikube.shutit_minikube do_basic no \
-		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
-		-s techniques.shutit_minikube.shutit_minikube do_concourse no \
-		-s techniques.shutit_minikube.shutit_minikube do_clair no \
-		-s techniques.shutit_minikube.shutit_minikube do_jenkinsx no \
 		-s techniques.shutit_minikube.shutit_minikube do_grafeas yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
 		-m shutit-library/vagrant \
@@ -236,17 +172,7 @@ then
 	git submodule init
 	git submodule update
 	$SHUTIT build --echo -d bash \
-		-s techniques.shutit_minikube.shutit_minikube download yes \
-		-s techniques.shutit_minikube.shutit_minikube do_knative no \
-		-s techniques.shutit_minikube.shutit_minikube do_istio no \
-		-s techniques.shutit_minikube.shutit_minikube do_basic no \
-		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
-		-s techniques.shutit_minikube.shutit_minikube do_concourse no \
-		-s techniques.shutit_minikube.shutit_minikube do_clair no \
-		-s techniques.shutit_minikube.shutit_minikube do_jenkinsx no \
-		-s techniques.shutit_minikube.shutit_minikube do_grafeas no \
 		-s techniques.shutit_minikube.shutit_minikube do_image_policy_webhook yes \
-		-s techniques.shutit_minikube.shutit_minikube do_cilium no \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
@@ -256,16 +182,6 @@ then
 	git submodule init
 	git submodule update
 	$SHUTIT build --echo -d bash \
-		-s techniques.shutit_minikube.shutit_minikube download yes \
-		-s techniques.shutit_minikube.shutit_minikube do_knative no \
-		-s techniques.shutit_minikube.shutit_minikube do_istio no \
-		-s techniques.shutit_minikube.shutit_minikube do_basic no \
-		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
-		-s techniques.shutit_minikube.shutit_minikube do_concourse no \
-		-s techniques.shutit_minikube.shutit_minikube do_clair no \
-		-s techniques.shutit_minikube.shutit_minikube do_jenkinsx no \
-		-s techniques.shutit_minikube.shutit_minikube do_grafeas no \
-		-s techniques.shutit_minikube.shutit_minikube do_image_policy_webhook no \
 		-s techniques.shutit_minikube.shutit_minikube do_cilium yes \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
@@ -275,18 +191,16 @@ then
 	git submodule init
 	git submodule update
 	$SHUTIT build --echo -d bash \
-		-s techniques.shutit_minikube.shutit_minikube download yes \
-		-s techniques.shutit_minikube.shutit_minikube do_knative no \
-		-s techniques.shutit_minikube.shutit_minikube do_istio no \
-		-s techniques.shutit_minikube.shutit_minikube do_basic no \
-		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder no \
-		-s techniques.shutit_minikube.shutit_minikube do_concourse no \
-		-s techniques.shutit_minikube.shutit_minikube do_clair no \
-		-s techniques.shutit_minikube.shutit_minikube do_jenkinsx no \
-		-s techniques.shutit_minikube.shutit_minikube do_grafeas no \
-		-s techniques.shutit_minikube.shutit_minikube do_image_policy_webhook no \
-		-s techniques.shutit_minikube.shutit_minikube do_cilium no \
 		-s techniques.shutit_minikube.shutit_minikube do_helm yes \
+		-m shutit-library/vagrant \
+		-m shutit-library/virtualization \
+		"$@"
+elif [[ ${BUILD} = 'helm_flux' ]]
+then
+	git submodule init
+	git submodule update
+	$SHUTIT build --echo -d bash \
+		-s techniques.shutit_minikube.shutit_minikube do_helm_flux yes \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"

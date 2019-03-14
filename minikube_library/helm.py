@@ -8,7 +8,6 @@ def do_helm(s):
 	# From: https://helm.sh/docs/using_helm/#example-service-account-with-cluster-admin-role
 	# NAMESPACE LEVEL HELM
 	s.send('kubectl create namespace tiller-confined')
-	s.send('kubectl create serviceaccount tiller-confined')
 	s.send_file('ns-role-tiller.yaml','''kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -42,7 +41,6 @@ roleRef:
 	s.send('helm init --service-account tiller-confined-sa --tiller-namespace tiller-confined')
 
 	s.send('kubectl create namespace tiller-confined2')
-	s.send('kubectl create serviceaccount tiller-confined2')
 	s.send_file('ns-role-tiller2.yaml','''apiVersion: v1
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -75,8 +73,6 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io''')
 	s.send('kubectl create -f ns-role-binding2.yaml')
 	s.send('helm init --service-account tiller-confined-sa2 --tiller-namespace tiller-confined2')
-	s.pause_point('')
-
 
 	# CLUSTER LEVEL HELM
 	# Create cluster admin role
