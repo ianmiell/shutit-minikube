@@ -72,7 +72,10 @@ roleRef:
   name: tiller-nsmanager2
   apiGroup: rbac.authorization.k8s.io''')
 	s.send('kubectl create -f ns-role-binding2.yaml')
+	# Get the yaml only
+	#s.send('helm init --service-account tiller-confined-sa2 --tiller-namespace tiller-confined2 -o yaml')
 	s.send('helm init --service-account tiller-confined-sa2 --tiller-namespace tiller-confined2')
+	s.pause_point('')
 
 	# CLUSTER LEVEL HELM
 	# Create cluster admin role
