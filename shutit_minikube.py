@@ -65,7 +65,7 @@ spec:
 		# Linux
 		OS = shutit.send_and_get_output('uname')
 		shutit.send('mkdir -p ~/bin')
-		if shutit.cfg[self.module_id]['download']:
+		if shutit.cfg[self.module_id]['download'] or not shutit.command_available('kubectl') or not shutit.command_available('minikube'):
 			if OS == 'Linux':
 				shutit.send('curl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl > ~/bin/kubectl')
 			elif OS == 'Darwin':
@@ -153,7 +153,7 @@ spec:
 			shutit.send('curl $(minikube service hello-minikube --url)')
 		elif shutit.cfg[self.module_id]['do_helm_flux']:
 			shutit.send('minikube start --memory=8096')
-			self.do_rbac(shutit)
+			shutit.send('kubectl create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default')
 			helm_flux.do_helm_flux(shutit)
 		else:
 			shutit.pause_point('No do_ACTION chosen?')
@@ -183,7 +183,7 @@ spec:
 			shutit.get_config(self.module_id,'do_' + do,boolean=True,default=False)
 		shutit.get_config(self.module_id,'istio_version',default='1.0.3')
 		shutit.get_config(self.module_id,'kubernetes_version',default='1.12.0')
-		shutit.get_config(self.module_id,'download',default=True,boolean=True)
+		shutit.get_config(self.module_id,'download',default=False,boolean=True)
 		return True
 
 def module():
