@@ -152,7 +152,7 @@ spec:
 			shutit.send('kubectl get pod')
 			shutit.send('curl $(minikube service hello-minikube --url)')
 		elif shutit.cfg[self.module_id]['do_helm_flux']:
-			shutit.send('minikube start --memory=5120')
+			shutit.send('minikube start --memory=8096')
 			self.do_rbac(shutit)
 			helm_flux.do_helm_flux(shutit)
 		else:
