@@ -39,6 +39,8 @@ subjects:
 	s.send('kubectl -n flux logs deployment/flux',note='Check fluxlogs')
 	s.send('export FLUX_FORWARD_NAMESPACE=flux',note='Specify the flux namespace in an env variable')
 	s.send('fluxctl list-controllers --all-namespaces',note='List controllers')
+	fluxctl_identity = s.send_and_get_output('fluxctl identity')
 	s.send('fluxctl identity',note='Get the fluxctl public key')
+	# TODO: automate via github api
 	s.pause_point('add flux shutit key above to github and continue https://github.com/ianmiell/flux-get-started/settings/keys/new')
 	s.pause_point('Now wait for everything in that repo to deploy')
