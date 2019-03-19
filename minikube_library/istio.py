@@ -17,6 +17,34 @@ def do_istio(s, version):
 	s.send('kubectl create -f install/kubernetes/istio-demo.yaml || true')
 	s.send_until('kubectl get pod -n istio-system | grep -v ^NAME | grep -v Running | grep -v Completed | wc -l','0', cadence=20)
 	s.send("kubectl run -i --rm --restart=Never dummy --image=byrnedo/alpine-curl -n istio-system --command -- curl -v 'http://istio-pilot.istio-system:8080/v1/registration'")
+	do_mtls(s)
+
+
+def do_mtls(s):
+	# From: https://istio.io/docs/tasks/security/authn-policy/
+	s.send('''kubectl create ns foo''')
+	s.send('''kubectl apply -f <(istioctl kube-inject -f <(wget -qO- https://raw.githubusercontent.com/istio/istio/release-1.0/samples/httpbin/httpbin.yaml)) -n bar''')
+	s.send('''kubectl apply -f <(istioctl kube-inject -f <(wget -qO- https://raw.githubusercontent.com/istio/istio/release-1.0/samples/sleep/sleep.yaml)) -n foo''')
+	s.send('''kubectl create ns bar''')
+	s.send('''kubectl apply -f <(istioctl kube-inject -f <(wget -qO- https://raw.githubusercontent.com/istio/istio/release-1.0/samples/httpbin/httpbin.yaml)) -n bar''')
+	s.send('''kubectl apply -f <(istioctl kube-inject -f <(wget -qO- https://raw.githubusercontent.com/istio/istio/release-1.0/samples/sleep/sleep.yaml)) -n foo''')
+	s.send('''kubectl create ns legacy''')
+	s.send('''kubectl apply -f <(wget -qO- https://raw.githubusercontent.com/istio/istio/release-1.0/samples/httpbin/httpbin.yamlsamples/httpbin/httpbin.yaml) -n legacy''')
+	s.send('''kubectl apply -f <(wget -qO- https://raw.githubusercontent.com/istio/istio/release-1.0/samples/sleep/sleep.yaml) -n legacy''')
+	s.send('''cat <<EOF | kubectl apply -f -
+apiVersion: "networking.istio.io/v1alpha3"
+kind: "DestinationRule"
+metadata:
+  name: "default"
+  namespace: "default"
+spec:
+  host: "*.local"
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+EOF''')
+	s.pause_point('istio installed?')
+
 
 
 # Istio in Action book
