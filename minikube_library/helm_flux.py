@@ -48,7 +48,15 @@ subjects:
 	# FLUX TENANT RBAC
 	# Now we have helm global, we now need to create a flux local in the tenant namespace
 	# Set up rbac appropriately in prep for flux global to be created, bound to the namespace where appropriate.
-	s.send_file('rbac-config-' + tenant_ns + '.yaml','''kind: Role
+	s.send_file('rbac-config-' + tenant_ns + '.yaml','''---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    name: tenant
+  name: tenant
+---
+kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   name: flux-''' + tenant_ns + '''-role
