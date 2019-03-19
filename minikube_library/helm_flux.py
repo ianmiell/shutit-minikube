@@ -80,7 +80,6 @@ subjects:
 	# purge any existing helm reference to flux-tenant
 	s.send('helm delete --purge flux-' + tenant_ns + ' || true',note='Delete any pre-existing helm install, as per https://github.com/helm/helm/issues/3208')
 
-
 	# FLUX GLOBAL
 	s.send('helm repo add weaveworks https://weaveworks.github.io/flux',note='Add helm repo for flux')
 	s.send('kubectl apply -f https://raw.githubusercontent.com/weaveworks/flux/master/deploy-helm/flux-helm-release-crd.yaml',note='create CRD for flux')
