@@ -45,27 +45,9 @@ subjects:
 	s.send('helm init --service-account tiller --tiller-namespace kube-system')
 	s.send('kubectl get pods --all-namespaces')
 
-	# FLUX GLOBAL
-	s.send('helm repo add weaveworks https://weaveworks.github.io/flux',note='Add helm repo for flux')
-	s.send('kubectl apply -f https://raw.githubusercontent.com/weaveworks/flux/master/deploy-helm/flux-helm-release-crd.yaml',note='create CRD for flux')
-	s.send('sleep 60',note='Wait until flux ready set up')
-	s.send('helm delete --purge flux || true',note='Delete any pre-existing helm install, as per https://github.com/helm/helm/issues/3208')
-	s.send('helm upgrade -i flux --set helmOperator.create=true --set helmOperator.createCRD=false --set git.url=git@github.com:ianmiell/flux-get-started --namespace flux weaveworks/flux',note='Initialise flux with the get-started repo')
-	s.send('sleep 60',note='Wait until flux ready set up')
-	s.send('kubectl -n flux logs deployment/flux',note='Check fluxlogs')
-	#s.send('export FLUX_FORWARD_NAMESPACE=flux',note='Specify the flux namespace in an env variable')
-
-	# Get identity and upload to github
-	s.send('fluxctl list-controllers --all-namespaces --k8s-fwd-ns flux',note='List controllers')
-	fluxctl_identity = s.send_and_get_output('fluxctl identity --k8s-fwd-ns flux')
-	r = g.get_repo("ianmiell/flux-get-started")
-	r.create_key('auto-key-' + str(int(time.time())), fluxctl_identity, read_only=False)
-
-	s.send('sleep 60',note='Wait until all set up')
-
-	# FLUX TENANT
-	# Now we have helm global, and flux global, we now need to create a flux local in the tenant namespace
-	# Set up rbac appropriately, bound to the namespace where appropriate.
+	# FLUX TENANT RBAC
+	# Now we have helm global, we now need to create a flux local in the tenant namespace
+	# Set up rbac appropriately in prep for flux global to be created, bound to the namespace where appropriate.
 	s.send_file('rbac-config-' + tenant_ns + '.yaml','''kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
@@ -95,7 +77,31 @@ subjects:
     name: flux-''' + tenant_ns + '''-sa
     namespace: ''' + tenant_ns)
 	s.send('kubectl create -f rbac-config-' + tenant_ns + '.yaml -n ' + tenant_ns)
+	# purge any existing helm reference to flux-tenant
+	s.send('helm delete --purge flux-' + tenant_ns + ' || true',note='Delete any pre-existing helm install, as per https://github.com/helm/helm/issues/3208')
 
+
+	# FLUX GLOBAL
+	s.send('helm repo add weaveworks https://weaveworks.github.io/flux',note='Add helm repo for flux')
+	s.send('kubectl apply -f https://raw.githubusercontent.com/weaveworks/flux/master/deploy-helm/flux-helm-release-crd.yaml',note='create CRD for flux')
+	s.send('sleep 60',note='Wait until flux ready set up')
+
+	s.send('helm delete --purge flux || true',note='Delete any pre-existing helm install, as per https://github.com/helm/helm/issues/3208')
+	s.send('helm upgrade -i flux --set helmOperator.create=true --set helmOperator.createCRD=false --set git.url=git@github.com:ianmiell/flux-get-started --namespace flux weaveworks/flux',note='Initialise flux with the get-started repo')
+	s.send('sleep 60',note='Wait until flux ready set up')
+
+	s.send('kubectl -n flux logs deployment/flux',note='Check fluxlogs')
+	#s.send('export FLUX_FORWARD_NAMESPACE=flux',note='Specify the flux namespace in an env variable')
+
+	# Get identity and upload to github
+	s.send('fluxctl list-controllers --all-namespaces --k8s-fwd-ns flux',note='List controllers')
+	fluxctl_identity = s.send_and_get_output('fluxctl identity --k8s-fwd-ns flux')
+	r = g.get_repo("ianmiell/flux-get-started")
+	r.create_key('auto-key-' + str(int(time.time())), fluxctl_identity, read_only=False)
+
+	s.send('sleep 60',note='Wait until all set up')
+
+	# FLUX TENANT
 #	# Required to allow fluxctl to work - NO - need to wait for https://github.com/weaveworks/flux/pull/1668 to land
 #	s.send_file('rbac-config-' + tenant_ns + '-cluster.yaml','''kind: ClusterRole
 #apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -121,31 +127,29 @@ subjects:
 #	s.send('kubectl create -f rbac-config-' + tenant_ns + '-cluster.yaml -n ' + tenant_ns)
 
 
-	# purge any existing helm reference to flux-tenant
-	s.send('helm delete --purge flux-' + tenant_ns + ' || true',note='Delete any pre-existing helm install, as per https://github.com/helm/helm/issues/3208')
-	# install the flux-tenant
-	# don't create rbac (that sets up a cluster role)
-	# set the tiller namespace
-	# create a helm operator
-	# don't create CRD (that was done by the global flux)
-	# set the url appropriately
-	s.send(r'''helm upgrade -i flux-''' + tenant_ns + r''' \
-	         --set rbac.create=false \
-	         --set helmOperator.tillerNamespace=''' + tenant_ns + r''' \
-	         --set helmOperator.create=true \
-	         --set helmOperator.createCRD=false \
-	         --set serviceAccount.create=false \
-	         --set serviceAccount.name=flux-''' + tenant_ns + r'''-sa \
-	         --set git.url=git@github.com:ianmiell/flux-get-started-''' + tenant_ns + r''' \
-	         --namespace ''' + tenant_ns + r''' \
-	         --install weaveworks/flux''')
-	s.send('sleep 60',note='Wait until all set up')
+#REMOVED WHILE PORTING TO FLUX REPO
+#	# install the flux-tenant
+#	# don't create rbac (that sets up a cluster role)
+#	# set the tiller namespace
+#	# create a helm operator
+#	# don't create CRD (that was done by the global flux)
+#	# set the url appropriately
+#	s.send(r'''helm upgrade -i flux-''' + tenant_ns + r''' \
+#	         --set rbac.create=false \
+#	         --set helmOperator.tillerNamespace=''' + tenant_ns + r''' \
+#	         --set helmOperator.create=true \
+#	         --set helmOperator.createCRD=false \
+#	         --set serviceAccount.create=false \
+#	         --set serviceAccount.name=flux-''' + tenant_ns + r'''-sa \
+#	         --set git.url=git@github.com:ianmiell/flux-get-started-''' + tenant_ns + r''' \
+#	         --namespace ''' + tenant_ns + r''' \
+#	         --install weaveworks/flux''')
+#	s.send('sleep 60',note='Wait until all set up')
 
 	# Get identity of flux tenant and upload to github
 	fluxctl_identity = s.send_and_get_output('fluxctl identity --k8s-fwd-ns ' + tenant_ns)
 	r = g.get_repo("ianmiell/flux-get-started-" + tenant_ns)
 	r.create_key('auto-key-' + str(int(time.time())), fluxctl_identity, read_only=False)
 
-	s.send('fluxctl list-workloads -a --k8s-fwd-ns ' + tenant_ns)
+	s.send('fluxctl list-workloads -a --k8s-fwd-ns flux')
 	s.pause_point('Now flux in ' + tenant_ns + ' ns?')
-
