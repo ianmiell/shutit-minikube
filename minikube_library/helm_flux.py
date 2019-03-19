@@ -62,7 +62,10 @@ subjects:
 
 	# FLUX TENANT
 	# Now we have helm global, and flux global, we now need to create a flux local in the tenant namespace
-	# Set up rbac appropriately, bound to the namespace.
+	# Set up rbac appropriately, bound to the namespace where appropriate.
+
+
+
 	s.send_file('rbac-config-tenant.yaml','''kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
@@ -91,6 +94,30 @@ subjects:
   - kind: ServiceAccount
     name: flux-tenant-sa
     namespace: tenant''')
+
+
+	s.send_file('rbac-config-tenant-cluster.yaml','''kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: flux-tenant-cluster-role
+rules:
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get","list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: flux-tenant-cluster-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: flux-tenant-cluster-role
+subjects:
+  - kind: ServiceAccount
+    name: flux-tenant-sa
+    namespace: tenant''')
+
 	s.send('kubectl create -f rbac-config-tenant.yaml -n tenant')
 	# purge any existing helm reference to flux-tenant
 	s.send('helm delete --purge flux-tenant || true',note='Delete any pre-existing helm install, as per https://github.com/helm/helm/issues/3208')
