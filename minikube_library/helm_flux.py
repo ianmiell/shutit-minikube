@@ -48,43 +48,43 @@ subjects:
 	# FLUX TENANT RBAC
 	# Now we have helm global, we now need to create a flux local in the tenant namespace
 	# Set up rbac appropriately in prep for flux global to be created, bound to the namespace where appropriate.
-	s.send_file('rbac-config-' + tenant_ns + '.yaml','''---
-apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-    name: tenant
-  name: tenant
----
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: flux-''' + tenant_ns + '''-role
-  namespace: ''' + tenant_ns + '''
-rules:
-- apiGroups: ["", "*"]
-  resources: ["*"]
-  verbs: ["*"]
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: flux-''' + tenant_ns + '''-sa
-  namespace: ''' + tenant_ns + '''
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: flux-''' + tenant_ns + '''-binding
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: flux-''' + tenant_ns + '''-role
-subjects:
-  - kind: ServiceAccount
-    name: flux-''' + tenant_ns + '''-sa
-    namespace: ''' + tenant_ns)
-	s.send('kubectl create -f rbac-config-' + tenant_ns + '.yaml -n ' + tenant_ns)
+#	s.send_file('rbac-config-' + tenant_ns + '.yaml','''---
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#  labels:
+#    name: tenant
+#  name: tenant
+#---
+#kind: Role
+#apiVersion: rbac.authorization.k8s.io/v1beta1
+#metadata:
+#  name: flux-''' + tenant_ns + '''-role
+#  namespace: ''' + tenant_ns + '''
+#rules:
+#- apiGroups: ["", "*"]
+#  resources: ["*"]
+#  verbs: ["*"]
+#---
+#apiVersion: v1
+#kind: ServiceAccount
+#metadata:
+#  name: flux-''' + tenant_ns + '''-sa
+#  namespace: ''' + tenant_ns + '''
+#---
+#apiVersion: rbac.authorization.k8s.io/v1
+#kind: RoleBinding
+#metadata:
+#  name: flux-''' + tenant_ns + '''-binding
+#roleRef:
+#  apiGroup: rbac.authorization.k8s.io
+#  kind: Role
+#  name: flux-''' + tenant_ns + '''-role
+#subjects:
+#  - kind: ServiceAccount
+#    name: flux-''' + tenant_ns + '''-sa
+#    namespace: ''' + tenant_ns)
+#	s.send('kubectl create -f rbac-config-' + tenant_ns + '.yaml -n ' + tenant_ns)
 
 	# FLUX TENANT RBAC
 	# Required to allow fluxctl to work - need to wait for https://github.com/weaveworks/flux/pull/1668 to land to enable whitelisting of namespaces
