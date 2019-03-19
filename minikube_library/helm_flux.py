@@ -72,7 +72,7 @@ metadata:
   name: flux-tenant-role
   namespace: tenant
 rules:
-- apiGroups: ["", "extensions", "apps"]
+- apiGroups: ["", "extensions", "apps", "flux.weave.works"]
   resources: ["*"]
   verbs: ["*"]
 ---
@@ -94,6 +94,7 @@ subjects:
   - kind: ServiceAccount
     name: flux-tenant-sa
     namespace: tenant''')
+	s.send('kubectl create -f rbac-config-tenant.yaml -n tenant')
 
 
 	s.send_file('rbac-config-tenant-cluster.yaml','''kind: ClusterRole
@@ -117,8 +118,8 @@ subjects:
   - kind: ServiceAccount
     name: flux-tenant-sa
     namespace: tenant''')
+	s.send('kubectl create -f rbac-config-tenant-cluster.yaml -n tenant')
 
-	s.send('kubectl create -f rbac-config-tenant.yaml -n tenant')
 	# purge any existing helm reference to flux-tenant
 	s.send('helm delete --purge flux-tenant || true',note='Delete any pre-existing helm install, as per https://github.com/helm/helm/issues/3208')
 	# install the flux-tenant
