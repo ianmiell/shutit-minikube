@@ -96,29 +96,29 @@ subjects:
     namespace: ''' + tenant_ns)
 	s.send('kubectl create -f rbac-config-' + tenant_ns + '.yaml -n ' + tenant_ns)
 
-	# Required to allow fluxctl to work
-	s.send_file('rbac-config-' + tenant_ns + '-cluster.yaml','''kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: flux-''' + tenant_ns + '''-cluster-role
-rules:
-- apiGroups: [""]
-  resources: ["namespaces"]
-  verbs: ["get","list"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: flux-''' + tenant_ns + '''-cluster-binding
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: flux-''' + tenant_ns + '''-cluster-role
-subjects:
-  - kind: ServiceAccount
-    name: flux-''' + tenant_ns + '''-sa
-    namespace: ''' + tenant_ns)
-	s.send('kubectl create -f rbac-config-' + tenant_ns + '-cluster.yaml -n ' + tenant_ns)
+#	# Required to allow fluxctl to work - NO - need to wait for https://github.com/weaveworks/flux/pull/1668 to land
+#	s.send_file('rbac-config-' + tenant_ns + '-cluster.yaml','''kind: ClusterRole
+#apiVersion: rbac.authorization.k8s.io/v1beta1
+#metadata:
+#  name: flux-''' + tenant_ns + '''-cluster-role
+#rules:
+#- apiGroups: [""]
+#  resources: ["namespaces"]
+#  verbs: ["get","list"]
+#---
+#apiVersion: rbac.authorization.k8s.io/v1
+#kind: ClusterRoleBinding
+#metadata:
+#  name: flux-''' + tenant_ns + '''-cluster-binding
+#roleRef:
+#  apiGroup: rbac.authorization.k8s.io
+#  kind: ClusterRole
+#  name: flux-''' + tenant_ns + '''-cluster-role
+#subjects:
+#  - kind: ServiceAccount
+#    name: flux-''' + tenant_ns + '''-sa
+#    namespace: ''' + tenant_ns)
+#	s.send('kubectl create -f rbac-config-' + tenant_ns + '-cluster.yaml -n ' + tenant_ns)
 
 
 	# purge any existing helm reference to flux-tenant
