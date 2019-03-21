@@ -87,30 +87,30 @@ subjects:
     namespace: ''' + tenant_ns)
 	s.send('kubectl create -f rbac-config-' + tenant_ns + '.yaml -n ' + tenant_ns)
 
-#	# FLUX TENANT RBAC
-#	# Required to allow fluxctl to work - need to wait for https://github.com/weaveworks/flux/pull/1668 to land to enable whitelisting of namespaces
-#	s.send_file('rbac-config-' + tenant_ns + '-cluster.yaml','''kind: ClusterRole
-#apiVersion: rbac.authorization.k8s.io/v1beta1
-#metadata:
-#  name: flux-''' + tenant_ns + '''-cluster-role
-#rules:
-#- apiGroups: [""]
-#  resources: ["namespaces"]
-#  verbs: ["get","list"]
-#---
-#apiVersion: rbac.authorization.k8s.io/v1
-#kind: ClusterRoleBinding
-#metadata:
-#  name: flux-''' + tenant_ns + '''-cluster-binding
-#roleRef:
-#  apiGroup: rbac.authorization.k8s.io
-#  kind: ClusterRole
-#  name: flux-''' + tenant_ns + '''-cluster-role
-#subjects:
-#  - kind: ServiceAccount
-#    name: flux-''' + tenant_ns + '''-sa
-#    namespace: ''' + tenant_ns)
-#	s.send('kubectl create -f rbac-config-' + tenant_ns + '-cluster.yaml -n ' + tenant_ns)
+	# FLUX TENANT RBAC
+	# Required to allow fluxctl to work - need to wait for https://github.com/weaveworks/flux/pull/1668 to land to enable whitelisting of namespaces
+	s.send_file('rbac-config-' + tenant_ns + '-cluster.yaml','''kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: flux-''' + tenant_ns + '''-cluster-role
+rules:
+- apiGroups: ["flux.weave.works",""]
+  resources: ["*"]
+  verbs: ["list", "watch", "get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: flux-''' + tenant_ns + '''-cluster-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: flux-''' + tenant_ns + '''-cluster-role
+subjects:
+  - kind: ServiceAccount
+    name: flux-''' + tenant_ns + '''-sa
+    namespace: ''' + tenant_ns)
+	s.send('kubectl create -f rbac-config-' + tenant_ns + '-cluster.yaml -n ' + tenant_ns)
 
 	# purge any existing helm reference to flux-tenant
 	s.send('helm delete --purge flux-' + tenant_ns + ' || true',note='Delete any pre-existing helm install, as per https://github.com/helm/helm/issues/3208')
@@ -120,8 +120,9 @@ subjects:
 	s.send('kubectl apply -f https://raw.githubusercontent.com/weaveworks/flux/master/deploy-helm/flux-helm-release-crd.yaml',note='create CRD for flux')
 
 	s.send('helm delete --purge flux || true',note='Delete any pre-existing helm install, as per https://github.com/helm/helm/issues/3208')
+	s.send('sleep 120',note='Wait until flux ready set up')
 	s.send('helm upgrade -i flux --set helmOperator.create=true --set helmOperator.createCRD=false --set git.url=git@github.com:ianmiell/flux-get-started --namespace flux weaveworks/flux',note='Initialise flux with the get-started repo')
-	s.send('sleep 60',note='Wait until flux ready set up')
+	s.send('sleep 120',note='Wait until flux ready set up')
 
 	s.send('kubectl -n flux logs deployment/flux',note='Check fluxlogs')
 	#s.send('export FLUX_FORWARD_NAMESPACE=flux',note='Specify the flux namespace in an env variable')
