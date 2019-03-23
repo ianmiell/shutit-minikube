@@ -14,7 +14,9 @@ Where BUILD is one of:
 
 - basic                    - Sets up a default cluster
 - kaniko                   - A demo kaniko build
-- knative                  - TODO
+- knative                  - Knative setup
+- tekton                   - TODO
+- aktion                   - TODO
 - flux                     - TODO
 - rook                     - TODO
 - admission_controller     - Sets up an admission controller

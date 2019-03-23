@@ -125,7 +125,6 @@ subjects:
 	s.send('sleep 120',note='Wait until flux ready set up')
 
 	s.send('kubectl -n flux logs deployment/flux',note='Check fluxlogs')
-	#s.send('export FLUX_FORWARD_NAMESPACE=flux',note='Specify the flux namespace in an env variable')
 
 	# Get identity and upload to github
 	s.send('fluxctl list-controllers --all-namespaces --k8s-fwd-ns flux',note='List controllers')

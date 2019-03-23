@@ -22,6 +22,8 @@ from minikube_library import grafeas
 from minikube_library import image_policy_webhook
 from minikube_library import flux
 from minikube_library import cilium
+from minikube_library import aktium
+from minikube_library import tekton
 
 class shutit_minikube(ShutItModule):
 
@@ -84,23 +86,28 @@ spec:
 		if shutit.cfg[self.module_id]['do_client_go']:
 			shutit.send('minikube start --kubernetes-version=v' + shutit.cfg[self.module_id]['kubernetes_version'])
 			client_go.do_client_go(shutit,  shutit.cfg[self.module_id]['kubernetes_version'])
-		elif shutit.cfg[self.module_id]['do_istio']:
+		if shutit.cfg[self.module_id]['do_istio']:
 			shutit.send('minikube start --memory=4096 --disk-size=30g --kubernetes-version=v' + shutit.cfg[self.module_id]['kubernetes_version'])
 			istio.do_istio(shutit, shutit.cfg[self.module_id]['istio_version'])
 			istio.do_istioinaction(shutit)
-		elif shutit.cfg[self.module_id]['do_knative']:
-			shutit.send('minikube start --memory=8192 --cpus=4 --disk-size=30g --kubernetes-version=' + shutit.cfg[self.module_id]['kubernetes_version'] + ' --bootstrapper=kubeadm --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"')
+		if shutit.cfg[self.module_id]['do_knative'] or shutit.cfg[self.module_id]['do_aktion']:
+			shutit.send('minikube start --memory=8192 --cpus=4 --kubernetes-version=v1.12.0 --disk-size=30g --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"')
 			knative.do_knative(shutit)
-		elif shutit.cfg[self.module_id]['do_kubebuilder']:
+		if shutit.cfg[self.module_id]['do_aktion']:
+			knative.do_tekton(shutit)
+			knative.do_aktion(shutit)
+		if shutit.cfg[self.module_id]['do_tekton']:
+			knative.do_tekton(shutit)
+		if shutit.cfg[self.module_id]['do_kubebuilder']:
 			shutit.send('minikube start')
 			kubebuilder.do_kubebuilder(shutit,pw)
-		elif shutit.cfg[self.module_id]['do_operator']:
+		if shutit.cfg[self.module_id]['do_operator']:
 			shutit.send('minikube start')
 			operator.do_operator(shutit, pw)
-		elif shutit.cfg[self.module_id]['do_flux']:
+		if shutit.cfg[self.module_id]['do_flux']:
 			shutit.send('minikube start')
 			flux.do_flux(shutit, pw)
-		elif shutit.cfg[self.module_id]['do_kaniko']:
+		if shutit.cfg[self.module_id]['do_kaniko']:
 			shutit.send('minikube start')
 			# Blows up?
 			shutit.get_config(self.module_id,'docker_username')
@@ -108,55 +115,53 @@ spec:
 			shutit.get_config(self.module_id,'docker_password')
 			shutit.get_config(self.module_id,'docker_email')
 			kaniko.do_kaniko(shutit, shutit.cfg[self.module_id]['docker_username'], shutit.cfg[self.module_id]['docker_server'], shutit.cfg[self.module_id]['docker_password'], shutit.cfg[self.module_id]['docker_email'])
-		elif shutit.cfg[self.module_id]['do_admission_controller']:
+		if shutit.cfg[self.module_id]['do_admission_controller']:
 			shutit.send('minikube start')
 			admission_controller.do_admission_controller_opa(shutit)
 			# Does not work
 			#admission_controller.do_admission_controller_validating(shutit)
 			admission_controller.do_admission_controller_mutating(shutit)
-		elif shutit.cfg[self.module_id]['do_rook']:
+		if shutit.cfg[self.module_id]['do_rook']:
 			shutit.send('minikube start')
 			rook.do_rook(shutit)
-		elif shutit.cfg[self.module_id]['do_helm']:
+		if shutit.cfg[self.module_id]['do_helm']:
 			self.do_rbac(shutit)
 			helm.do_helm(shutit)
-		elif shutit.cfg[self.module_id]['do_concourse']:
+		if shutit.cfg[self.module_id]['do_concourse']:
 			self.do_rbac(shutit)
 			# Needs helm
 			helm.do_helm(shutit)
 			concourse.do_concourse(shutit)
-		elif shutit.cfg[self.module_id]['do_clair']:
+		if shutit.cfg[self.module_id]['do_clair']:
 			self.do_rbac(shutit)
 			# Needs helm
 			helm.do_helm(shutit)
 			clair.do_clair(shutit)
-		elif shutit.cfg[self.module_id]['do_jenkinsx']:
+		if shutit.cfg[self.module_id]['do_jenkinsx']:
 			self.do_rbac(shutit)
 			helm.do_helm(shutit)
 			self.create_pv(shutit)
 			jenkinsx.do_jenkinsx(shutit)
-		elif shutit.cfg[self.module_id]['do_grafeas']:
+		if shutit.cfg[self.module_id]['do_grafeas']:
 			shutit.send('minikube start')
 			grafeas.do_grafeas(shutit)
-		elif shutit.cfg[self.module_id]['do_image_policy_webhook']:
+		if shutit.cfg[self.module_id]['do_image_policy_webhook']:
 			shutit.send('minikube start')
 			image_policy_webhook.do_image_policy_webhook(shutit)
-		elif shutit.cfg[self.module_id]['do_cilium']:
+		if shutit.cfg[self.module_id]['do_cilium']:
 			#shutit.send('minikube start --kubernetes-version=v1.12.0 --network-plugin=cni --extra-config=kubelet.network-plugin=cni --memory=5120')
 			shutit.send('minikube start --kubernetes-version=v1.12.0  --memory=5120')
 			cilium.do_cilium(shutit)
-		elif shutit.cfg[self.module_id]['do_basic']:
+		if shutit.cfg[self.module_id]['do_basic']:
 			shutit.send('minikube start')
 			shutit.send('kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')
 			shutit.send('kubectl expose deployment hello-minikube --type=NodePort')
 			shutit.send('kubectl get pod')
 			shutit.send('curl $(minikube service hello-minikube --url)')
-		elif shutit.cfg[self.module_id]['do_helm_flux']:
+		if shutit.cfg[self.module_id]['do_helm_flux']:
 			shutit.send('minikube start --memory=8096')
 			shutit.send('kubectl create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default')
 			helm_flux.do_helm_flux(shutit)
-		else:
-			shutit.pause_point('No do_ACTION chosen?')
 		shutit.pause_point('all done')
 		return True
 
@@ -165,6 +170,8 @@ spec:
 		for do in ('basic',
 		           'istio',
 		           'knative',
+		           'aktion',
+		           'tekton',
 		           'client_go',
 		           'kubebuilder',
 		           'flux',
