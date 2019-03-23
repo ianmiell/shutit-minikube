@@ -22,7 +22,7 @@ from minikube_library import grafeas
 from minikube_library import image_policy_webhook
 from minikube_library import flux
 from minikube_library import cilium
-from minikube_library import aktium
+from minikube_library import aktion
 from minikube_library import tekton
 
 class shutit_minikube(ShutItModule):
