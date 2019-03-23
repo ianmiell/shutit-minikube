@@ -56,6 +56,26 @@ then
 		-m shutit-library/vagrant
 		-m shutit-library/virtualization \
 		"$@"
+elif [[ ${BUILD} = 'aktion' ]]
+then
+	git submodule init
+	git submodule update
+	$SHUTIT build --echo -d bash \
+		-s techniques.shutit_minikube.shutit_minikube do_aktion yes \
+		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
+		-m shutit-library/vagrant
+		-m shutit-library/virtualization \
+		"$@"
+elif [[ ${BUILD} = 'tekton' ]]
+then
+	git submodule init
+	git submodule update
+	$SHUTIT build --echo -d bash \
+		-s techniques.shutit_minikube.shutit_minikube do_tekton yes \
+		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
+		-m shutit-library/vagrant
+		-m shutit-library/virtualization \
+		"$@"
 elif [[ ${BUILD} = 'flux' ]]
 then
 	git submodule init
