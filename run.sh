@@ -53,7 +53,7 @@ then
 	$SHUTIT build --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_knative yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant
+		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
 elif [[ ${BUILD} = 'aktion' ]]
@@ -63,7 +63,7 @@ then
 	$SHUTIT build --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_aktion yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant
+		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
 elif [[ ${BUILD} = 'tekton' ]]
@@ -73,7 +73,7 @@ then
 	$SHUTIT build --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_tekton yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant
+		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
 elif [[ ${BUILD} = 'flux' ]]
@@ -83,7 +83,7 @@ then
 	$SHUTIT build --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_flux yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant
+		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
 elif [[ ${BUILD} = 'rook' ]]
@@ -94,7 +94,7 @@ then
 		-w \
 		-s techniques.shutit_minikube.shutit_minikube do_rook yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.12.0' \
-		-m shutit-library/vagrant
+		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
 elif [[ ${BUILD} = 'admission_controller' ]]
@@ -105,7 +105,7 @@ then
 		-w \
 		-s techniques.shutit_minikube.shutit_minikube do_admission_controller yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.12.0' \
-		-m shutit-library/vagrant
+		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
 elif [[ ${BUILD} = 'client_go' ]]
@@ -115,7 +115,7 @@ then
 	$SHUTIT build --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_client_go yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version '1.10.0' \
-		-m shutit-library/vagrant
+		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
 elif [[ ${BUILD} = 'istio' ]]
@@ -126,7 +126,7 @@ then
 		-w \
 		-s techniques.shutit_minikube.shutit_minikube do_istio yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version '1.10.0' \
-		-m shutit-library/vagrant
+		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
 elif [[ ${BUILD} = 'operator' ]]
@@ -136,7 +136,7 @@ then
 	$SHUTIT build --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_operator yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant
+		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
 elif [[ ${BUILD} = 'kubebuilder' ]]
@@ -146,7 +146,7 @@ then
 	$SHUTIT build --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant
+		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
 elif [[ ${BUILD} = 'concourse' ]]
@@ -156,7 +156,7 @@ then
 	$SHUTIT build --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_concourse yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant
+		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
 elif [[ ${BUILD} = 'clair' ]]
@@ -166,7 +166,7 @@ then
 	$SHUTIT build --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_clair yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant
+		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
 elif [[ ${BUILD} = 'jenkinsx' ]]
@@ -176,7 +176,7 @@ then
 	$SHUTIT build --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_jenkinsx yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-		-m shutit-library/vagrant
+		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
 elif [[ ${BUILD} = 'grafeas' ]]
