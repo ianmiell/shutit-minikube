@@ -94,10 +94,10 @@ spec:
 			shutit.send('minikube start --memory=8192 --cpus=4 --kubernetes-version=v1.12.0 --disk-size=30g --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"')
 			knative.do_knative(shutit)
 		if shutit.cfg[self.module_id]['do_aktion']:
-			knative.do_tekton(shutit)
+			tekton.do_tekton(shutit)
 			knative.do_aktion(shutit)
 		if shutit.cfg[self.module_id]['do_tekton']:
-			knative.do_tekton(shutit)
+			tekton.do_tekton(shutit)
 		if shutit.cfg[self.module_id]['do_kubebuilder']:
 			shutit.send('minikube start')
 			kubebuilder.do_kubebuilder(shutit,pw)
