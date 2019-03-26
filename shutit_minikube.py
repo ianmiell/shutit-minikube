@@ -95,7 +95,7 @@ spec:
 			knative.do_knative(shutit)
 		if shutit.cfg[self.module_id]['do_aktion']:
 			tekton.do_tekton(shutit)
-			knative.do_aktion(shutit)
+			aktion.do_aktion(shutit)
 		if shutit.cfg[self.module_id]['do_tekton']:
 			tekton.do_tekton(shutit)
 		if shutit.cfg[self.module_id]['do_kubebuilder']:
