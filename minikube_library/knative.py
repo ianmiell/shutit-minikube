@@ -1,5 +1,9 @@
 def do_knative(s):
 	# https://github.com/knative/docs/blob/master/docs/install/Knative-with-Minikube.md
+	s.login('minikube ssh')
+	s.send('''sudo sed -i 's/^.DNS.*/DNS=8.8.8.8/g' /etc/systemd/resolved.conf''')
+	s.send('''sudo systemctl restart systemd-resolved''')
+	s.logout()
 	s.send('kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/istio-crds.yaml')
 	s.send("""curl -L https://github.com/knative/serving/releases/download/v0.4.0/istio.yaml | sed 's/LoadBalancer/NodePort/' | kubectl apply --filename -""")
 	# Label the default namespace with istio-injection=enabled.

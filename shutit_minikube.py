@@ -91,7 +91,7 @@ spec:
 			istio.do_istio(shutit, shutit.cfg[self.module_id]['istio_version'])
 			istio.do_istioinaction(shutit)
 		if shutit.cfg[self.module_id]['do_knative'] or shutit.cfg[self.module_id]['do_aktion']:
-			shutit.send('minikube start --memory=8192 --cpus=4 --kubernetes-version=v1.12.0 --disk-size=30g --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"')
+			shutit.send('minikube start --memory=8192 --cpus=4 --kubernetes-version=v1.13.0 --disk-size=30g --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"')
 			knative.do_knative(shutit)
 		if shutit.cfg[self.module_id]['do_aktion']:
 			tekton.do_tekton(shutit)
