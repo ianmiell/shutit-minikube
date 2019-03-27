@@ -3,7 +3,7 @@ def do_knative(s):
 	s.send('kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/istio-crds.yaml')
 	s.send("""curl -L https://github.com/knative/serving/releases/download/v0.4.0/istio.yaml | sed 's/LoadBalancer/NodePort/' | kubectl apply --filename -""")
 	# Label the default namespace with istio-injection=enabled.
-	s.send('kubectl label namespace default istio-injection=enabled')
+	s.send('kubectl label --overwrite namespace default istio-injection=enabled')
 	s.send_until('kubectl get pod -n istio-system | grep -v ^NAME | grep -v Running | grep -v Completed | wc -l','0',cadence=20)
 	s.send("""curl -L https://github.com/knative/serving/releases/download/v0.4.0/serving.yaml | sed 's/LoadBalancer/NodePort/' | kubectl apply --filename -""")
 	s.send_until('kubectl get pod -n knative-serving | grep -v ^NAME | grep -v Running | wc -l','0',cadence=20)
