@@ -112,7 +112,7 @@ subjects:
     namespace: ''' + tenant_ns)
 	s.send('kubectl create -f rbac-config-' + tenant_ns + '-cluster.yaml -n ' + tenant_ns)
 
-	# purge any existing helm reference to flux-tenant
+	# purge any existing helm reference to flux-tenant from previous runs
 	s.send('helm delete --purge flux-' + tenant_ns + ' || true',note='Delete any pre-existing helm install, as per https://github.com/helm/helm/issues/3208')
 
 	# FLUX GLOBAL (installs tenant helm and flux)
