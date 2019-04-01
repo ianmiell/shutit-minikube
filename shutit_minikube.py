@@ -78,7 +78,7 @@ spec:
 			if OS == 'Linux':
 				shutit.send('curl https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 > $HOME/bin/minikube')
 			elif OS == 'Darwin':
-				shutit.send('curl https://storage.googleapis.com/minikube/releases/latest/minikube-darwin-amd64 > $HOME/bin/minikube')
+				shutit.send('brew cask install minikube')
 			shutit.send('chmod +x $HOME/bin/minikube')
 		shutit.send('export PATH=$(pwd):${PATH}')
 		shutit.send('minikube delete || true')
