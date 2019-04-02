@@ -120,22 +120,19 @@ subjects:
 	s.send('kubectl apply -f https://raw.githubusercontent.com/weaveworks/flux/master/deploy-helm/flux-helm-release-crd.yaml',note='create CRD for flux')
 
 	s.send('helm delete --purge flux || true',note='Delete any pre-existing helm install, as per https://github.com/helm/helm/issues/3208')
-	s.send('helm upgrade -i flux --set image.tag=1.10.1 --set helmOperator.create=true --set helmOperator.createCRD=false --set git.url=git@github.com:ianmiell/flux-get-started --namespace flux weaveworks/flux',note='Initialise flux with the get-started repo')
+	s.send('helm upgrade -i flux --set image.tag=1.10.0 --set helmOperator.create=true --set helmOperator.createCRD=false --set git.url=git@github.com:ianmiell/flux-get-started --namespace flux weaveworks/flux',note='Initialise flux with the get-started repo')
 	s.send('sleep 120',note='Wait until flux ready set up')
-	s.pause_point('is flux ok?')
-	s.send('fluxctl sync --k8s-fwd-ns flux')
 
 	s.send('kubectl -n flux logs deployment/flux',note='Check fluxlogs')
-
 	# Get identity and upload to github
 	s.send('fluxctl list-controllers --all-namespaces --k8s-fwd-ns flux',note='List controllers')
 	fluxctl_identity = s.send_and_get_output('fluxctl identity --k8s-fwd-ns flux')
 	r = g.get_repo("ianmiell/flux-get-started")
 	r.create_key('auto-key-' + str(int(time.time())), fluxctl_identity, read_only=False)
-
 	s.send('sleep 60',note='Wait until all set up')
-
 	s.pause_point('is flux ok?')
+	s.send('fluxctl sync --k8s-fwd-ns flux')
+
 
 	# FLUX TENANT
 	# Get identity of flux tenant and upload to github
