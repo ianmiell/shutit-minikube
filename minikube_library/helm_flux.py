@@ -121,7 +121,9 @@ subjects:
 
 	s.send('helm delete --purge flux || true',note='Delete any pre-existing helm install, as per https://github.com/helm/helm/issues/3208')
 	s.send('helm upgrade -i flux --image.tag 1.10.1 --set helmOperator.create=true --set helmOperator.createCRD=false --set git.url=git@github.com:ianmiell/flux-get-started --namespace flux weaveworks/flux',note='Initialise flux with the get-started repo')
-	s.send('sleep 300',note='Wait until flux ready set up')
+	s.send('sleep 120',note='Wait until flux ready set up')
+	s.pause_point('is flux ok?')
+	s.send('fluxctl sync --k8s-fwd-ns flux')
 
 	s.send('kubectl -n flux logs deployment/flux',note='Check fluxlogs')
 
@@ -132,6 +134,8 @@ subjects:
 	r.create_key('auto-key-' + str(int(time.time())), fluxctl_identity, read_only=False)
 
 	s.send('sleep 60',note='Wait until all set up')
+
+	s.pause_point('is flux ok?')
 
 	# FLUX TENANT
 	# Get identity of flux tenant and upload to github
