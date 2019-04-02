@@ -120,9 +120,8 @@ subjects:
 	s.send('kubectl apply -f https://raw.githubusercontent.com/weaveworks/flux/master/deploy-helm/flux-helm-release-crd.yaml',note='create CRD for flux')
 
 	s.send('helm delete --purge flux || true',note='Delete any pre-existing helm install, as per https://github.com/helm/helm/issues/3208')
-	s.send('sleep 120',note='Wait until flux ready set up')
 	s.send('helm upgrade -i flux --set helmOperator.create=true --set helmOperator.createCRD=false --set git.url=git@github.com:ianmiell/flux-get-started --namespace flux weaveworks/flux',note='Initialise flux with the get-started repo')
-	s.send('sleep 120',note='Wait until flux ready set up')
+	s.send('sleep 300',note='Wait until flux ready set up')
 
 	s.send('kubectl -n flux logs deployment/flux',note='Check fluxlogs')
 
