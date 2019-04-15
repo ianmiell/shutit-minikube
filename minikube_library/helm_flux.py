@@ -48,7 +48,7 @@ subjects:
 
 	# 2) FLUX TENANT RBAC
 	# Now we have helm global, we now need to create a flux local in the tenant namespace
-	# Set up rbac appropriately in prep for flux global to be created, bound to the namespace where appropriate.
+	# Create namespace
 	s.send_file('rbac-config-ns-' + tenant_ns + '.yaml','''---
 apiVersion: v1
 kind: Namespace
@@ -58,6 +58,7 @@ metadata:
   name: tenant
 ''')
 	s.send('kubectl create -f rbac-config-ns-' + tenant_ns + '.yaml -n ' + tenant_ns)
+	# Set up rbac appropriately in prep for flux global to be created, bound to the namespace where appropriate.
 	# Required to allow fluxctl to work - need to wait for https://github.com/weaveworks/flux/pull/1668 to land to enable whitelisting of namespaces
 	s.send_file('rbac-config-' + tenant_ns + '-cluster.yaml','''kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -82,7 +83,7 @@ subjects:
     namespace: ''' + tenant_ns)
 	s.send('kubectl create -f rbac-config-' + tenant_ns + '-cluster.yaml -n ' + tenant_ns)
 
-	# purge any existing helm reference to flux-tenant from previous runs
+	# Minishift housekeeping - purge any existing helm reference to flux-tenant from previous runs
 	s.send('helm delete --purge flux-' + tenant_ns + ' || true',note='Delete any pre-existing helm install, as per https://github.com/helm/helm/issues/3208')
 
 	# 3) FLUX GLOBAL (installs tenant helm and flux)
@@ -103,7 +104,6 @@ subjects:
 	s.send('sleep 60',note='Wait until all set up')
 	s.pause_point('is flux ok?')
 	s.send('fluxctl sync --k8s-fwd-ns flux')
-
 
 	# 4) FLUX TENANT
 	# Get identity of flux tenant and upload to github
