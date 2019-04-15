@@ -92,7 +92,7 @@ subjects:
 
 	s.send('helm delete --purge flux || true',note='Delete any pre-existing helm install, as per https://github.com/helm/helm/issues/3208')
 	s.send('sleep 120',note='Wait until helm ready')
-	s.send('helm upgrade -i flux --set image.tag=1.11.0 --set helmOperator.create=true --set helmOperator.createCRD=false --set git.url=git@github.com:ianmiell/flux-get-started --namespace flux weaveworks/flux',note='Initialise flux with the get-started repo')
+	s.send('helm upgrade -i flux --set image.tag=1.12.0 --set helmOperator.create=true --set helmOperator.createCRD=false --set git.url=git@github.com:ianmiell/flux-get-started --namespace flux weaveworks/flux',note='Initialise flux with the get-started repo')
 	s.send('sleep 120',note='Wait until flux ready set up')
 
 	s.send('kubectl -n flux logs deployment/flux',note='Check fluxlogs')
