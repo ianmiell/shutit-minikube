@@ -102,7 +102,6 @@ subjects:
 	r = g.get_repo("ianmiell/flux-get-started")
 	r.create_key('auto-key-' + str(int(time.time())), fluxctl_identity, read_only=False)
 	s.send('sleep 60',note='Wait until all set up')
-	s.pause_point('is flux ok?')
 	s.send('fluxctl sync --k8s-fwd-ns flux')
 
 	# 4) FLUX TENANT
