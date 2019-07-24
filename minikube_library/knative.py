@@ -1,19 +1,18 @@
 def do_knative(s):
 	# https://github.com/knative/docs/blob/master/docs/install/Knative-with-Minikube.md
-	#s.login('minikube ssh')
-	#s.send('''sudo sed -i 's/^.DNS.*/DNS=8.8.8.8/g' /etc/systemd/resolved.conf''')
-	#s.send('''sudo systemctl restart systemd-resolved''')
-	#s.logout()
-	s.send('kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/istio-crds.yaml')
-	s.send("""curl -L https://github.com/knative/serving/releases/download/v0.4.0/istio.yaml | sed 's/LoadBalancer/NodePort/' | kubectl apply --filename -""")
+	s.send('kubectl apply --filename https://raw.githubusercontent.com/knative/serving/v0.5.2/third_party/istio-1.0.7/istio-crds.yaml')
+	s.send("""curl -L https://raw.githubusercontent.com/knative/serving/v0.5.2/third_party/istio-1.0.7/istio.yaml | sed 's/LoadBalancer/NodePort/' | kubectl apply --filename -""")
 	# Label the default namespace with istio-injection=enabled.
 	s.send('kubectl label --overwrite namespace default istio-injection=enabled')
 	s.send_until('kubectl get pod -n istio-system | grep -v ^NAME | grep -v Running | grep -v Completed | wc -l','0',cadence=20)
-	s.send("""curl -L https://github.com/knative/serving/releases/download/v0.4.0/serving.yaml | sed 's/LoadBalancer/NodePort/' | kubectl apply --filename -""")
-	s.send_until('kubectl get pod -n knative-serving | grep -v ^NAME | grep -v Running | wc -l','0',cadence=20)
-	s.send('INGRESSGATEWAY=knative-ingressgateway')
-	# The use of `knative-ingressgateway` is deprecated in Knative v0.3.x.
-	# Use `istio-ingressgateway` instead, since `knative-ingressgateway`
-	# will be removed in Knative v0.4.
-	s.send('''if kubectl get configmap config-istio -n knative-serving &> /dev/null; then INGRESSGATEWAY=istio-ingressgateway; fi''')
-	s.send('''echo $(minikube ip):$(kubectl get svc $INGRESSGATEWAY --namespace istio-system --output 'jsonpath={.spec.ports[?(@.port==80)].nodePort}')''')
+	s.send('kubectl delete svc knative-ingressgateway -n istio-system || true')
+	s.send('kubectl delete deploy knative-ingressgateway -n istio-system || true')
+	s.send('kubectl delete statefulset/controller-manager -n knative-sources || true')
+	s.send('kubectl apply --selector knative.dev/crd-install=true --filename https://github.com/knative/serving/releases/download/v0.7.0/serving.yaml --filename https://github.com/knative/build/releases/download/v0.7.0/build.yaml --filename https://github.com/knative/eventing/releases/download/v0.7.0/release.yaml --filename https://github.com/knative/serving/releases/download/v0.7.0/monitoring.yaml')
+	s.send('kubectl apply --filename https://github.com/knative/serving/releases/download/v0.7.0/serving.yaml --selector networking.knative.dev/certificate-provider!=cert-manager \
+--filename https://github.com/knative/build/releases/download/v0.7.0/build.yaml --filename https://github.com/knative/eventing/releases/download/v0.7.0/release.yaml --filename https://github.com/knative/serving/releases/download/v0.7.0/monitoring.yaml')
+	s.send_until('kubectl get pods --namespace knative-serving | grep -v ^NAME | grep -v Running | wc -l','0', cadence=20)
+	s.send_until('kubectl get pods --namespace knative-build | grep -v ^NAME | grep -v Running | wc -l','0', cadence=20)
+	s.send_until('kubectl get pods --namespace knative-eventing | grep -v ^NAME | grep -v Running | wc -l','0', cadence=20)
+	s.send_until('kubectl get pods --namespace knative-monitoring | grep -v ^NAME | grep -v Running | wc -l','0', cadence=20)
+
