@@ -1,4 +1,5 @@
 def do_knative(s):
+
 	# https://github.com/knative/docs/blob/master/docs/install/Knative-with-Minikube.md
 	s.send('kubectl apply --filename https://raw.githubusercontent.com/knative/serving/v0.5.2/third_party/istio-1.0.7/istio-crds.yaml')
 	s.send("""curl -L https://raw.githubusercontent.com/knative/serving/v0.5.2/third_party/istio-1.0.7/istio.yaml | sed 's/LoadBalancer/NodePort/' | kubectl apply --filename -""")
