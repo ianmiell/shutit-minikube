@@ -46,7 +46,6 @@ EOF''')
 	s.pause_point('istio installed?')
 
 
-
 # Istio in Action book
 def do_istioinaction(s):
 	s.send('cd ../book-source-code')
