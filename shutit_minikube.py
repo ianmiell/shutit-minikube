@@ -66,12 +66,12 @@ spec:
 		# curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
 		# Linux
 		OS = shutit.send_and_get_output('uname')
-		shutit.send('mkdir -p ~/bin')
+		shutit.send('mkdir -p $HOME/bin')
 		if shutit.cfg[self.module_id]['download'] or not shutit.command_available('kubectl') or not shutit.command_available('minikube'):
 			if OS == 'Linux':
-				shutit.send('curl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl > ~/bin/kubectl')
+				shutit.send('curl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl > $HOME/bin/kubectl')
 			elif OS == 'Darwin':
-				shutit.send('curl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl > ~/bin/kubectl')
+				shutit.send('curl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl > $HOME/bin/kubectl')
 			shutit.send('chmod +x $HOME/bin/kubectl')
 			# Windows
 			#curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/windows/amd64/kubectl.exe
