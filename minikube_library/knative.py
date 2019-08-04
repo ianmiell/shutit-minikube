@@ -1,7 +1,7 @@
 def do_knative(s):
 	# https://github.com/knative/docs/blob/master/docs/install/Knative-with-Minikube.md
 	s.send('''kubectl apply --filename https://raw.githubusercontent.com/knative/serving/v0.7.0/third_party/istio-1.1.7/istio-crds.yaml''')
-	s.send('''sleep 30''')
+	s.send('''sleep 120''')
 	s.send('''curl -L https://raw.githubusercontent.com/knative/serving/v0.7.0/third_party/istio-1.1.7/istio.yaml | sed 's/LoadBalancer/NodePort/'   | kubectl apply --filename -''')
 	s.send('''sleep 10''')
 	# Label the default namespace with istio-injection=enabled.
