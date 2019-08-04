@@ -162,7 +162,6 @@ spec:
 			shutit.send('minikube start --memory=8096')
 			shutit.send('kubectl create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default')
 			helm_flux.do_helm_flux(shutit)
-		shutit.pause_point('all done')
 		return True
 
 
