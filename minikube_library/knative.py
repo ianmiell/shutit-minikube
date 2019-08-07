@@ -159,3 +159,8 @@ kubectl logs -l serving.knative.dev/service=event-display -c user-container --si
 ''')
 	s.send('kubectl delete --filename cronjob-source.yaml')
 	s.send('kubectl delete --filename service.yaml')
+
+
+def do_serving_app(s):
+	# TODO: https://knative.dev/docs/serving/samples/hello-world/helloworld-python/index.html
+	pass
