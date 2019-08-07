@@ -63,7 +63,7 @@ spec:
 		except IOError:
 		    pw = ''
 		if pw == '':
-		    shutit.log('''================================================================================\nWARNING! IF THIS DOES NOT WORK YOU MAY NEED TO SET UP A 'secret' FILE IN THIS FOLDER!\n================================================================================''',level=logging.CRITICAL)
+		    shutit.log('''================================================================================\nWARNING! IF THIS DOES NOT WORK YOU MAY NEED TO SET UP A 'secret' FILE IN THIS FOLDER!\n================================================================================''', level=logging.CRITICAL)
 		    pw='nopass'
 
 		# ASSUMING LINUX FOR NOW
@@ -105,7 +105,7 @@ spec:
 			tekton.do_tekton(shutit)
 		if shutit.cfg[self.module_id]['do_kubebuilder']:
 			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
-			kubebuilder.do_kubebuilder(shutit,pw)
+			kubebuilder.do_kubebuilder(shutit, pw)
 		if shutit.cfg[self.module_id]['do_operator']:
 			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
 			operator.do_operator(shutit, pw)
@@ -191,12 +191,12 @@ spec:
 		           'cilium',
 		           'helm',
 		           'helm_flux'):
-			shutit.get_config(self.module_id,'do_' + do,boolean=True,default=False)
-		shutit.get_config(self.module_id,'istio_version',default='1.0.3')
-		shutit.get_config(self.module_id,'kubernetes_version',default='1.12.0')
-		shutit.get_config(self.module_id,'download',default=False,boolean=True)
-		shutit.get_config(self.module_id,'provider',default='parallels')
-		shutit.get_config(self.module_id,'profile')
+			shutit.get_config(self.module_id,'do_' + do, boolean=True, default=False)
+		shutit.get_config(self.module_id,'istio_version', default='1.0.3')
+		shutit.get_config(self.module_id,'kubernetes_version', default='1.12.0')
+		shutit.get_config(self.module_id,'download', default=False, boolean=True)
+		shutit.get_config(self.module_id,'provider', default='parallels')
+		shutit.get_config(self.module_id,'profile', hint='Give this minikube instance a profile name. This cannot easily be changed.')
 		return True
 
 def module():
