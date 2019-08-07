@@ -9,7 +9,11 @@ def do_knative(s):
 	s.send_until('kubectl get pod -n istio-system | grep -v ^NAME | grep -v Running | grep -v Completed | wc -l','0',cadence=20)
 	s.send('''sleep 10''')
 	s.send('kubectl apply --selector knative.dev/crd-install=true --filename https://github.com/knative/serving/releases/download/v0.7.0/serving.yaml --filename https://github.com/knative/build/releases/download/v0.7.0/build.yaml --filename https://github.com/knative/eventing/releases/download/v0.7.0/release.yaml --filename https://github.com/knative/serving/releases/download/v0.7.0/monitoring.yaml')
+	s.send('''sleep 10''')
+	# Run twice so that error is not seen again.
+	s.send('kubectl apply --selector knative.dev/crd-install=true --filename https://github.com/knative/serving/releases/download/v0.7.0/serving.yaml --filename https://github.com/knative/build/releases/download/v0.7.0/build.yaml --filename https://github.com/knative/eventing/releases/download/v0.7.0/release.yaml --filename https://github.com/knative/serving/releases/download/v0.7.0/monitoring.yaml')
 	s.send('''sleep 30''')
+	# Then run again.
 	s.send('kubectl apply --filename https://github.com/knative/serving/releases/download/v0.7.0/serving.yaml --selector networking.knative.dev/certificate-provider!=cert-manager --filename https://github.com/knative/build/releases/download/v0.7.0/build.yaml --filename https://github.com/knative/eventing/releases/download/v0.7.0/release.yaml --filename https://github.com/knative/serving/releases/download/v0.7.0/monitoring.yaml')
 	s.send_until('kubectl get pods --namespace knative-serving | grep -v ^NAME | grep -v Running | wc -l','0', cadence=20)
 	s.send_until('kubectl get pods --namespace knative-build | grep -v ^NAME | grep -v Running | wc -l','0', cadence=20)
@@ -19,9 +23,9 @@ def do_knative(s):
 
 def do_kubernetes_eventing(s):
 	# https://knative.dev/docs/eventing/samples/kubernetes-event-source/
-	s.send('kubectl create namespace k8s-events')
-	s.send('kubectl config set-context --current --namespace=k8s-events')
-	s.send('kubectl label namespace k8s-events knative-eventing-injection=enabled')
+	#s.send('kubectl create namespace default')
+	s.send('kubectl config set-context --current --namespace=default')
+	s.send('kubectl label namespace default knative-eventing-injection=enabled')
 	# Create a Service Account that the ApiServerSource runs as.
 	# The ApiServerSource watches for Kubernetes events and forwards them to the Knative Eventing Broker.
 	# Create a file named serviceaccount.yaml and copy the code block below into it.
@@ -30,7 +34,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: events-sa
-  namespace: k8s-events
+  namespace: default
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -57,7 +61,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: events-sa
-    namespace: k8s-events''')
+    namespace: default''')
 	s.send('kubectl create -f serviceaccount.yaml')
 	# In order to receive events, you have to create a concrete Event Source for a specific namespace.
 	# Create a file named k8s-events.yaml and copy the code block below into it
@@ -65,7 +69,7 @@ subjects:
 kind: ApiServerSource
 metadata:
   name: testevents
-  namespace: k8s-events
+  namespace: default
 spec:
   serviceAccountName: events-sa
   mode: Resource
@@ -75,18 +79,18 @@ spec:
   sink:
     apiVersion: eventing.knative.dev/v1alpha1
     kind: Broker
-    name: k8s-events''')
+    name: default''')
 	s.send('kubectl create -f k8s-events.yaml')
 	# In order to check the ApiServerSource is fully working, we will create a simple
 	# Knative Service that dumps incoming messages to its log and creates a
 	# Trigger from the Broker to that Knative Service.
 	# Create a file named trigger.yaml and copy the code block below into it.
-	# If the deployed ApiServerSource is pointing at a Broker other than k8s-events, modify trigger.yaml by adding spec.broker with the Broker’s name.
+	# If the deployed ApiServerSource is pointing at a Broker other than default, modify trigger.yaml by adding spec.broker with the Broker’s name.
 	s.send_file('trigger.yaml','''apiVersion: eventing.knative.dev/v1alpha1
 kind: Trigger
 metadata:
   name: testevents-trigger
-  namespace: k8s-events
+  namespace: default
 spec:
   subscriber:
     ref:
@@ -99,7 +103,7 @@ apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
   name: event-display
-  namespace: k8s-events
+  namespace: default
 spec:
   template:
     spec:
@@ -108,7 +112,8 @@ spec:
           # https://github.com/knative/eventing-contrib/blob/release-0.5/cmd/event_display/main.go
           image: gcr.io/knative-releases/github.com/knative/eventing-sources/cmd/event_display@sha256:bf45b3eb1e7fc4cb63d6a5a6416cf696295484a7662e0cf9ccdf5c080542c21d''')
 	s.send('kubectl create -f trigger.yaml')
-	# Create events by launching a pod in the k8s-events namespace. Create a busybox container and immediately delete it.
+	s.send('sleep 30')
+	# Create events by launching a pod in the default namespace. Create a busybox container and immediately delete it.
 	s.send('kubectl run busybox --image=busybox --restart=Never -- ls')
 	s.send('kubectl delete pod busybox')
 	s.send('kubectl get pods')
