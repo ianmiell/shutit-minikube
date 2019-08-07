@@ -195,7 +195,7 @@ spec:
 		shutit.get_config(self.module_id,'istio_version', default='1.0.3')
 		shutit.get_config(self.module_id,'kubernetes_version', default='1.12.0')
 		shutit.get_config(self.module_id,'download', default=False, boolean=True)
-		shutit.get_config(self.module_id,'provider', default='parallels')
+		shutit.get_config(self.module_id,'vm_provider', default='parallels')
 		shutit.get_config(self.module_id,'profile', hint='Give this minikube instance a profile name. This cannot easily be changed. eg knative-07-aug')
 		return True
 
