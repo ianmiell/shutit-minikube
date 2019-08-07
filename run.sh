@@ -43,7 +43,6 @@ then
 	$SHUTIT build -l info --echo -d bash \
 	    -s techniques.shutit_minikube.shutit_minikube do_kaniko yes \
 	    -s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 	    -m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -54,7 +53,6 @@ then
 	$SHUTIT build -l info --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_knative yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -65,7 +63,6 @@ then
 	$SHUTIT build -l info --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_aktion yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -76,7 +73,6 @@ then
 	$SHUTIT build -l info --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_tekton yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -87,7 +83,6 @@ then
 	$SHUTIT build -l info --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_flux yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -99,7 +94,6 @@ then
 		-w \
 		-s techniques.shutit_minikube.shutit_minikube do_rook yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.12.0' \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -111,7 +105,6 @@ then
 		-w \
 		-s techniques.shutit_minikube.shutit_minikube do_admission_controller yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.12.0' \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -122,7 +115,6 @@ then
 	$SHUTIT build -l info --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_client_go yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version '1.10.0' \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -134,7 +126,6 @@ then
 		-w \
 		-s techniques.shutit_minikube.shutit_minikube do_istio yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version '1.10.0' \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -145,7 +136,6 @@ then
 	$SHUTIT build -l info --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_operator yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -156,7 +146,6 @@ then
 	$SHUTIT build -l info --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_kubebuilder yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -167,7 +156,6 @@ then
 	$SHUTIT build -l info --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_concourse yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -178,7 +166,6 @@ then
 	$SHUTIT build -l info --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_clair yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -189,7 +176,6 @@ then
 	$SHUTIT build -l info --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_jenkinsx yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -200,7 +186,6 @@ then
 	$SHUTIT build -l info --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_grafeas yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -211,7 +196,6 @@ then
 	$SHUTIT build -l info --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_image_policy_webhook yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version 'v1.11.3' \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -221,7 +205,6 @@ then
 	git submodule update
 	$SHUTIT build -l info --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_cilium yes \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -231,7 +214,6 @@ then
 	git submodule update
 	$SHUTIT build -l info --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_helm yes \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -241,7 +223,6 @@ then
 	git submodule update
 	$SHUTIT build -l info --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_helm_flux yes \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"
@@ -249,7 +230,6 @@ elif [[ ${BUILD} = 'basic' ]]
 then
 	${SHUTIT} build -l info --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_basic yes \
-	    -s techniques.shutit_minikube.shutit_minikube profile "date +%a_%d_%m-%H-%M" \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization "$@"
 else
