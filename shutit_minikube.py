@@ -176,6 +176,12 @@ Build complete. To set up your env, run:
 Use your VM provider: ''' + vm_provider + '''
 to manage the VM.
 
+If you use the VM provider to suspend or shutdown the machine, restart it, and then run:
+
+	minikube start
+
+to get the service back up.
+
 Hit CTRL-] to continue to completion.
 ''')
 		return True
