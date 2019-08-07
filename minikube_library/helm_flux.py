@@ -20,7 +20,8 @@ def do_helm_flux(s):
 	if not s.command_available('helm'):
 		# https://docs.helm.sh/using_helm/#installing-the-helm-client
 		s.send('curl https://raw.githubusercontent.com/helm/helm/master/scripts/get | bash')
-	# 1) INSTALL HELM GLOBAL
+
+	# 1) INSTALL TILLER GLOBAL
 	# Create cluster admin role
 	s.send_file('rbac-config.yaml','''apiVersion: v1
 kind: ServiceAccount
@@ -41,10 +42,8 @@ subjects:
     name: tiller
     namespace: kube-system''')
 	s.send('kubectl create -f rbac-config.yaml')
-	s.send('kubectl get pods --all-namespaces')
+	# Create tiller on server
 	s.send('helm init --service-account tiller --tiller-namespace kube-system')
-	s.send('kubectl get pods --all-namespaces')
-	s.send('kubectl get namespaces')
 
 	# 2) FLUX TENANT RBAC
 	# Now we have helm global, we now need to create a flux local in the tenant namespace
@@ -82,17 +81,16 @@ subjects:
     name: flux-''' + tenant_ns + '''-sa
     namespace: ''' + tenant_ns)
 	s.send('kubectl create -f rbac-config-' + tenant_ns + '-cluster.yaml -n ' + tenant_ns)
-
 	# Minishift housekeeping - purge any existing helm reference to flux-tenant from previous runs
 	s.send('helm delete --purge flux-' + tenant_ns + ' || true',note='Delete any pre-existing helm install, as per https://github.com/helm/helm/issues/3208')
 
 	# 3) FLUX GLOBAL (installs tenant helm and flux)
 	s.send('helm repo add weaveworks https://weaveworks.github.io/flux',note='Add helm repo for flux')
 	s.send('kubectl apply -f https://raw.githubusercontent.com/weaveworks/flux/master/deploy-helm/flux-helm-release-crd.yaml',note='create CRD for flux')
-
-	s.send('helm delete --purge flux || true',note='Delete any pre-existing helm install, as per https://github.com/helm/helm/issues/3208')
+	s.send('helm delete --purge flux || true',note='Delete any pre-existing helm flux install, as per https://github.com/helm/helm/issues/3208')
 	s.send('sleep 120',note='Wait until helm ready')
-	s.send('helm upgrade -i flux --set image.tag=1.12.0 --set helmOperator.create=true --set helmOperator.createCRD=false --set git.url=git@github.com:ianmiell/flux-get-started --namespace flux weaveworks/flux',note='Initialise flux with the get-started repo')
+	#s.send('helm upgrade -i flux --set image.tag=1.12.0 --set helmOperator.create=true --set helmOperator.createCRD=false --set git.url=git@github.com:ianmiell/flux-get-started --namespace flux weaveworks/flux',note='Initialise flux with the get-started repo')
+	s.send('helm upgrade -i flux --set image.tag=1.12.0 --set helmOperator.create=true --set git.url=git@github.com:ianmiell/flux-get-started --namespace flux weaveworks/flux',note='Initialise flux with the get-started repo')
 	s.send('sleep 120',note='Wait until flux ready set up')
 
 	s.send('kubectl -n flux logs deployment/flux',note='Check fluxlogs')

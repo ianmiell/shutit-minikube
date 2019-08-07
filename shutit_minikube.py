@@ -29,8 +29,9 @@ class shutit_minikube(ShutItModule):
 
 
 	def do_rbac(self, shutit):
+		vm_provider = shutit.cfg[self.module_id]['vm_provider']
 		# Need RBAC
-		shutit.send('minikube start --extra-config=apiserver.authorization-mode=RBAC --memory=4096')
+		shutit.send('minikube start --vm-driver=' + vm_provider + ' --extra-config=apiserver.authorization-mode=RBAC --memory=4096')
 		shutit.send('kubectl create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default')
 
 	def create_pv(self, shutit):
@@ -50,6 +51,8 @@ spec:
 		shutit.send('rm pv.yaml')
 
 	def build(self, shutit):
+		kubernetes_version = shutit.cfg[self.module_id]['kubernetes_version']
+		vm_provider = shutit.cfg[self.module_id]['vm_provider']
 		################################################################################
 		# Extract password from 'secret' file (which git ignores).
 		# TODO: check perms are only readable by user
@@ -84,14 +87,14 @@ spec:
 		shutit.send('minikube delete || true')
 		shutit.send('minikube config set WantKubectlDownloadMsg false')
 		if shutit.cfg[self.module_id]['do_client_go']:
-			shutit.send('minikube start --kubernetes-version=v' + shutit.cfg[self.module_id]['kubernetes_version'])
-			client_go.do_client_go(shutit,  shutit.cfg[self.module_id]['kubernetes_version'])
+			shutit.send('minikube start --vm-driver=' + vm_provider + ' --kubernetes-version=v' + kubernetes_version
+			client_go.do_client_go(shutit, kubernetes_version)
 		if shutit.cfg[self.module_id]['do_istio']:
-			shutit.send('minikube start --memory=4096 --disk-size=30g --kubernetes-version=v' + shutit.cfg[self.module_id]['kubernetes_version'])
+			shutit.send('minikube start --vm-driver=' + vm_provider + ' --memory=4096 --disk-size=30g --kubernetes-version=v' + kubernetes_version)
 			istio.do_istio(shutit, shutit.cfg[self.module_id]['istio_version'])
 			istio.do_istioinaction(shutit)
 		if shutit.cfg[self.module_id]['do_knative'] or shutit.cfg[self.module_id]['do_aktion']:
-			shutit.send('''minikube start --memory=12192 --cpus=6 --kubernetes-version=v1.12.7 --disk-size=30g --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"''')
+			shutit.send('''minikube start --vm-driver=''' + vm_provider + ''' --memory=12192 --cpus=6 --kubernetes-version=v1.12.7 --disk-size=30g --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"''')
 			knative.do_knative(shutit)
 		if shutit.cfg[self.module_id]['do_aktion']:
 			tekton.do_tekton(shutit)
@@ -99,16 +102,16 @@ spec:
 		if shutit.cfg[self.module_id]['do_tekton']:
 			tekton.do_tekton(shutit)
 		if shutit.cfg[self.module_id]['do_kubebuilder']:
-			shutit.send('minikube start')
+			shutit.send('minikube start --vm-driver=' + vm_provider)
 			kubebuilder.do_kubebuilder(shutit,pw)
 		if shutit.cfg[self.module_id]['do_operator']:
-			shutit.send('minikube start')
+			shutit.send('minikube start --vm-driver=' + vm_provider)
 			operator.do_operator(shutit, pw)
 		if shutit.cfg[self.module_id]['do_flux']:
-			shutit.send('minikube start')
+			shutit.send('minikube start --vm-driver=' + vm_provider)
 			flux.do_flux(shutit, pw)
 		if shutit.cfg[self.module_id]['do_kaniko']:
-			shutit.send('minikube start')
+			shutit.send('minikube start --vm-driver=' + vm_provider)
 			# Blows up?
 			shutit.get_config(self.module_id,'docker_username')
 			shutit.get_config(self.module_id,'docker_server')
@@ -116,13 +119,13 @@ spec:
 			shutit.get_config(self.module_id,'docker_email')
 			kaniko.do_kaniko(shutit, shutit.cfg[self.module_id]['docker_username'], shutit.cfg[self.module_id]['docker_server'], shutit.cfg[self.module_id]['docker_password'], shutit.cfg[self.module_id]['docker_email'])
 		if shutit.cfg[self.module_id]['do_admission_controller']:
-			shutit.send('minikube start')
+			shutit.send('minikube start --vm-driver=' + vm_provider)
 			admission_controller.do_admission_controller_opa(shutit)
 			# Does not work
 			#admission_controller.do_admission_controller_validating(shutit)
 			admission_controller.do_admission_controller_mutating(shutit)
 		if shutit.cfg[self.module_id]['do_rook']:
-			shutit.send('minikube start')
+			shutit.send('minikube start --vm-driver=' + vm_provider)
 			rook.do_rook(shutit)
 		if shutit.cfg[self.module_id]['do_helm']:
 			self.do_rbac(shutit)
@@ -143,23 +146,23 @@ spec:
 			self.create_pv(shutit)
 			jenkinsx.do_jenkinsx(shutit)
 		if shutit.cfg[self.module_id]['do_grafeas']:
-			shutit.send('minikube start')
+			shutit.send('minikube start --vm-driver=' + vm_provider)
 			grafeas.do_grafeas(shutit)
 		if shutit.cfg[self.module_id]['do_image_policy_webhook']:
-			shutit.send('minikube start')
+			shutit.send('minikube start --vm-driver=' + vm_provider)
 			image_policy_webhook.do_image_policy_webhook(shutit)
 		if shutit.cfg[self.module_id]['do_cilium']:
-			#shutit.send('minikube start --kubernetes-version=v1.12.0 --network-plugin=cni --extra-config=kubelet.network-plugin=cni --memory=5120')
-			shutit.send('minikube start --kubernetes-version=v1.12.0  --memory=5120')
+			#shutit.send('minikube start --vm-driver=' + vm_provider + ' --kubernetes-version=v1.12.0 --network-plugin=cni --extra-config=kubelet.network-plugin=cni --memory=5120')
+			shutit.send('minikube start --vm-driver=' + vm_provider + ' --kubernetes-version=v1.12.0  --memory=5120')
 			cilium.do_cilium(shutit)
 		if shutit.cfg[self.module_id]['do_basic']:
-			shutit.send('minikube start')
+			shutit.send('minikube start --vm-driver=' + vm_provider)
 			shutit.send('kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')
 			shutit.send('kubectl expose deployment hello-minikube --type=NodePort')
 			shutit.send('kubectl get pod')
 			shutit.send('curl $(minikube service hello-minikube --url)')
 		if shutit.cfg[self.module_id]['do_helm_flux']:
-			shutit.send('minikube start --memory=8096')
+			shutit.send('minikube start --vm-driver=' + vm_provider + ' --memory=8096')
 			shutit.send('kubectl create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default')
 			helm_flux.do_helm_flux(shutit)
 		return True
@@ -190,6 +193,7 @@ spec:
 		shutit.get_config(self.module_id,'istio_version',default='1.0.3')
 		shutit.get_config(self.module_id,'kubernetes_version',default='1.12.0')
 		shutit.get_config(self.module_id,'download',default=False,boolean=True)
+		shutit.get_config(self.module_id,'provider',default='parallels')
 		return True
 
 def module():
