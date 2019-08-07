@@ -167,6 +167,17 @@ spec:
 			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider + ' --memory=8096')
 			shutit.send('kubectl create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default')
 			helm_flux.do_helm_flux(shutit)
+		shutit.pause_point('''
+
+Build complete. To set up your env, run:
+
+    minikube profile ''' + profile + '''
+
+Use your VM provider: ''' + vm_provider + '''
+to manage the VM.
+
+Hit CTRL-] to continue to completion.
+''')
 		return True
 
 
