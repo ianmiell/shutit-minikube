@@ -21,13 +21,13 @@ def do_knative(s):
 
 
 def do_kubernetes_eventing(s):
-	# https://knative.dev/docs/eventing/samples/kubernetes-event-source/
+	# https://knative.dev/docs/eventing/samples/kubernetes-event-source/
 	#s.send('kubectl create namespace default')
 	s.send('kubectl config set-context --current --namespace=default')
 	s.send('kubectl label namespace default knative-eventing-injection=enabled')
 	# Create a Service Account that the ApiServerSource runs as.
-	# The ApiServerSource watches for Kubernetes events and forwards them to the Knative Eventing Broker.
-	# Create a file named serviceaccount.yaml and copy the code block below into it.
+	# The ApiServerSource watches for Kubernetes events and forwards them to the Knative Eventing Broker.
+	# Create a file named serviceaccount.yaml and copy the code block below into it.
 	s.send_file('serviceaccount.yaml', '''apiVersion: serving.knative.dev/v1alpha1
 apiVersion: v1
 kind: ServiceAccount
@@ -63,7 +63,7 @@ subjects:
     namespace: default''')
 	s.send('kubectl create -f serviceaccount.yaml')
 	# In order to receive events, you have to create a concrete Event Source for a specific namespace.
-	# Create a file named k8s-events.yaml and copy the code block below into it
+	# Create a file named k8s-events.yaml and copy the code block below into it
 	s.send_file('k8s-events.yaml','''apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: ApiServerSource
 metadata:
@@ -84,7 +84,7 @@ spec:
 	# Knative Service that dumps incoming messages to its log and creates a
 	# Trigger from the Broker to that Knative Service.
 	# Create a file named trigger.yaml and copy the code block below into it.
-	# If the deployed ApiServerSource is pointing at a Broker other than default, modify trigger.yaml by adding spec.broker with the Broker’s name.
+	# If the deployed ApiServerSource is pointing at a Broker other than default, modify trigger.yaml by adding spec.broker with the Broker's name.
 	s.send_file('trigger.yaml','''apiVersion: eventing.knative.dev/v1alpha1
 kind: Trigger
 metadata:
@@ -112,7 +112,7 @@ spec:
           image: gcr.io/knative-releases/github.com/knative/eventing-sources/cmd/event_display@sha256:bf45b3eb1e7fc4cb63d6a5a6416cf696295484a7662e0cf9ccdf5c080542c21d''')
 	s.send('kubectl create -f trigger.yaml')
 	s.send('sleep 30')
-	# Create events by launching a pod in the default namespace. Create a busybox container and immediately delete it.
+	# Create events by launching a pod in the default namespace. Create a busybox container and immediately delete it.
 	s.send('kubectl run busybox --image=busybox --restart=Never -- ls')
 	s.send('kubectl delete pod busybox')
 	s.send('kubectl get pods')

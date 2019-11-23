@@ -31,6 +31,7 @@ Where BUILD is one of:
 - cilium                   - Deploys cilium
 - helm                     - Deploys Helm
 - helm_flux                - Deploys Helm & Flux and namespace-specific helm and flux
+- trow                     - Deploys Trow with RBAC
 
 END
 }
@@ -225,6 +226,15 @@ then
 		-s techniques.shutit_minikube.shutit_minikube do_helm_flux yes \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
+		"$@"
+elif [[ ${BUILD} = 'trow' ]]
+then
+	git submodule init
+	git submodule update
+	$SHUTIT build -l info --echo -d bash \
+		-s techniques.shutit_minikube.shutit_minikube do_trow yes \
+		-m shutit-library/vagrant \
+		-m shutit-library/virtualization
 		"$@"
 elif [[ ${BUILD} = 'basic' ]]
 then

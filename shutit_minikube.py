@@ -24,6 +24,7 @@ from minikube_library import flux
 from minikube_library import cilium
 from minikube_library import aktion
 from minikube_library import tekton
+from minikube_library import trow
 
 class shutit_minikube(ShutItModule):
 
@@ -132,6 +133,9 @@ spec:
 		if shutit.cfg[self.module_id]['do_helm']:
 			self.do_rbac(shutit)
 			helm.do_helm(shutit)
+		if shutit.cfg[self.module_id]['do_trow']:
+			self.do_rbac(shutit)
+			trow.do_trow(shutit, profile, pw)
 		if shutit.cfg[self.module_id]['do_concourse']:
 			self.do_rbac(shutit)
 			# Needs helm
@@ -207,12 +211,13 @@ Hit CTRL-] to continue to completion.
 		           'image_policy_webhook',
 		           'cilium',
 		           'helm',
-		           'helm_flux'):
+		           'helm_flux',
+		           'trow'):
 			shutit.get_config(self.module_id,'do_' + do, boolean=True, default=False)
 		shutit.get_config(self.module_id,'istio_version', default='1.0.3')
 		shutit.get_config(self.module_id,'kubernetes_version', default='1.12.0')
 		shutit.get_config(self.module_id,'download', default=False, boolean=True)
-		shutit.get_config(self.module_id,'vm_provider', default='parallels')
+		shutit.get_config(self.module_id,'vm_provider', default='virtualbox')
 		shutit.get_config(self.module_id,'profile', hint='Give this minikube instance a profile name. This cannot easily be changed. eg knative-07-aug')
 		return True
 
