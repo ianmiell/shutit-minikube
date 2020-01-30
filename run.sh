@@ -22,6 +22,7 @@ Where BUILD is one of:
 - admission_controller     - Sets up an admission controller
 - client_go                - Builds a basic go client
 - istio                    - Follows istio in action book
+- kustomize                - kustomize
 - operator                 - Builds an operator
 - kubebuilder              - Kubebuilder
 - concourse                - Deploys concourse CI
@@ -127,6 +128,17 @@ then
 		-w \
 		-s techniques.shutit_minikube.shutit_minikube do_istio yes \
 		-s techniques.shutit_minikube.shutit_minikube kubernetes_version '1.10.0' \
+		-m shutit-library/vagrant \
+		-m shutit-library/virtualization \
+		"$@"
+elif [[ ${BUILD} = 'kustomize' ]]
+then
+	git submodule init
+	git submodule update
+	$SHUTIT build -l info --echo -d bash \
+		-w \
+		-s techniques.shutit_minikube.shutit_minikube do_kustomize yes \
+		-s techniques.shutit_minikube.shutit_minikube kubernetes_version '1.17.0' \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization \
 		"$@"

@@ -5,6 +5,7 @@ import os
 import inspect
 from shutit_module import ShutItModule
 from minikube_library import kubewatch
+from minikube_library import kustomize
 from minikube_library import istio
 from minikube_library import knative
 from minikube_library import client_go
@@ -104,32 +105,6 @@ spec:
 			aktion.do_aktion(shutit)
 		if shutit.cfg[self.module_id]['do_tekton']:
 			tekton.do_tekton(shutit)
-		if shutit.cfg[self.module_id]['do_kubebuilder']:
-			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
-			kubebuilder.do_kubebuilder(shutit, pw)
-		if shutit.cfg[self.module_id]['do_operator']:
-			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
-			operator.do_operator(shutit, pw)
-		if shutit.cfg[self.module_id]['do_flux']:
-			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
-			flux.do_flux(shutit, pw)
-		if shutit.cfg[self.module_id]['do_kaniko']:
-			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
-			# Blows up?
-			shutit.get_config(self.module_id,'docker_username')
-			shutit.get_config(self.module_id,'docker_server')
-			shutit.get_config(self.module_id,'docker_password')
-			shutit.get_config(self.module_id,'docker_email')
-			kaniko.do_kaniko(shutit, shutit.cfg[self.module_id]['docker_username'], shutit.cfg[self.module_id]['docker_server'], shutit.cfg[self.module_id]['docker_password'], shutit.cfg[self.module_id]['docker_email'])
-		if shutit.cfg[self.module_id]['do_admission_controller']:
-			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
-			admission_controller.do_admission_controller_opa(shutit)
-			# Does not work
-			#admission_controller.do_admission_controller_validating(shutit)
-			admission_controller.do_admission_controller_mutating(shutit)
-		if shutit.cfg[self.module_id]['do_rook']:
-			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
-			rook.do_rook(shutit)
 		if shutit.cfg[self.module_id]['do_helm']:
 			self.do_rbac(shutit)
 			helm.do_helm(shutit)
@@ -154,23 +129,52 @@ spec:
 		if shutit.cfg[self.module_id]['do_grafeas']:
 			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
 			grafeas.do_grafeas(shutit)
-		if shutit.cfg[self.module_id]['do_image_policy_webhook']:
+		elif shutit.cfg[self.module_id]['do_image_policy_webhook']:
 			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
 			image_policy_webhook.do_image_policy_webhook(shutit)
-		if shutit.cfg[self.module_id]['do_cilium']:
+		elif shutit.cfg[self.module_id]['do_cilium']:
 			#shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider + ' --kubernetes-version=v1.12.0 --network-plugin=cni --extra-config=kubelet.network-plugin=cni --memory=5120')
 			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider + ' --kubernetes-version=v1.12.0  --memory=5120')
 			cilium.do_cilium(shutit)
-		if shutit.cfg[self.module_id]['do_basic']:
+		elif shutit.cfg[self.module_id]['do_basic']:
 			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
 			shutit.send('kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080')
 			shutit.send('kubectl expose deployment hello-minikube --type=NodePort')
 			shutit.send('kubectl get pod')
 			shutit.send('curl $(minikube -p ' + profile + ' service hello-minikube --url)')
-		if shutit.cfg[self.module_id]['do_helm_flux']:
+		elif shutit.cfg[self.module_id]['do_helm_flux']:
 			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider + ' --memory=8096')
 			shutit.send('kubectl create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default')
 			helm_flux.do_helm_flux(shutit)
+		elif shutit.cfg[self.module_id]['do_kustomize']:
+			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider + ' --memory=4096 --disk-size=30g --kubernetes-version=v' + kubernetes_version)
+			kustomize.do_kustomize(shutit)
+		elif shutit.cfg[self.module_id]['do_rook']:
+			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
+			rook.do_rook(shutit)
+		elif shutit.cfg[self.module_id]['do_kubebuilder']:
+			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
+			kubebuilder.do_kubebuilder(shutit, pw)
+		elif shutit.cfg[self.module_id]['do_operator']:
+			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
+			operator.do_operator(shutit, pw)
+		elif shutit.cfg[self.module_id]['do_flux']:
+			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
+			flux.do_flux(shutit, pw)
+		elif shutit.cfg[self.module_id]['do_kaniko']:
+			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
+			# Blows up?
+			shutit.get_config(self.module_id,'docker_username')
+			shutit.get_config(self.module_id,'docker_server')
+			shutit.get_config(self.module_id,'docker_password')
+			shutit.get_config(self.module_id,'docker_email')
+			kaniko.do_kaniko(shutit, shutit.cfg[self.module_id]['docker_username'], shutit.cfg[self.module_id]['docker_server'], shutit.cfg[self.module_id]['docker_password'], shutit.cfg[self.module_id]['docker_email'])
+		elif shutit.cfg[self.module_id]['do_admission_controller']:
+			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
+			admission_controller.do_admission_controller_opa(shutit)
+			# Does not work
+			#admission_controller.do_admission_controller_validating(shutit)
+			admission_controller.do_admission_controller_mutating(shutit)
 		shutit.pause_point('''
 
 Build complete. To set up your env, run:
@@ -212,13 +216,14 @@ Hit CTRL-] to continue to completion.
 		           'cilium',
 		           'helm',
 		           'helm_flux',
-		           'trow'):
+		           'trow',
+		           'kustomize'):
 			shutit.get_config(self.module_id,'do_' + do, boolean=True, default=False)
 		shutit.get_config(self.module_id,'istio_version', default='1.0.3')
-		shutit.get_config(self.module_id,'kubernetes_version', default='1.12.0')
+		shutit.get_config(self.module_id,'kubernetes_version', default='1.17.0')
 		shutit.get_config(self.module_id,'download', default=False, boolean=True)
 		shutit.get_config(self.module_id,'vm_provider', default='virtualbox')
-		shutit.get_config(self.module_id,'profile', hint='Give this minikube instance a profile name. This cannot easily be changed. eg knative-07-aug')
+		shutit.get_config(self.module_id,'profile', hint='Give this minikube instance a profile name.\nThis cannot easily be changed. eg knative-07-aug')
 		return True
 
 def module():
