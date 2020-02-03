@@ -224,6 +224,7 @@ Hit CTRL-] to continue to completion.
 		shutit.get_config(self.module_id,'download', default=False, boolean=True)
 		shutit.get_config(self.module_id,'vm_provider', default='virtualbox')
 		shutit.get_config(self.module_id,'profile', hint='Give this minikube instance a profile name.\nThis cannot easily be changed. eg knative-07-aug')
+		shutit.get_config(self.module_id,'gui',default='true')
 		return True
 
 def module():
