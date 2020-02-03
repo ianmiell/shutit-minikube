@@ -26,6 +26,7 @@ from minikube_library import cilium
 from minikube_library import aktion
 from minikube_library import tekton
 from minikube_library import trow
+from minikube_library import monitoring
 
 class shutit_minikube(ShutItModule):
 
@@ -175,6 +176,9 @@ spec:
 			# Does not work
 			#admission_controller.do_admission_controller_validating(shutit)
 			admission_controller.do_admission_controller_mutating(shutit)
+		elif shutit.cfg[self.module_id]['do_monitoring']:
+			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
+			helm.do_helm(shutit)
 		shutit.pause_point('''
 
 Build complete. To set up your env, run:
@@ -217,6 +221,7 @@ Hit CTRL-] to continue to completion.
 		           'helm',
 		           'helm_flux',
 		           'trow',
+		           'monitoring',
 		           'kustomize'):
 			shutit.get_config(self.module_id,'do_' + do, boolean=True, default=False)
 		shutit.get_config(self.module_id,'istio_version', default='1.0.3')

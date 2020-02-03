@@ -33,6 +33,7 @@ Where BUILD is one of:
 - helm                     - Deploys Helm
 - helm_flux                - Deploys Helm & Flux and namespace-specific helm and flux
 - trow                     - Deploys Trow with RBAC
+- monitoring               - Deploys prometheus, kiali etc (?), istio (?)
 
 END
 }
@@ -252,6 +253,12 @@ elif [[ ${BUILD} = 'basic' ]]
 then
 	${SHUTIT} build -l info --echo -d bash \
 		-s techniques.shutit_minikube.shutit_minikube do_basic yes \
+		-m shutit-library/vagrant \
+		-m shutit-library/virtualization "$@"
+elif [[ ${BUILD} = 'monitoring' ]]
+then
+	${SHUTIT} build -l info --echo -d bash \
+		-s techniques.shutit_minikube.shutit_minikube do_monitoring yes \
 		-m shutit-library/vagrant \
 		-m shutit-library/virtualization "$@"
 else
