@@ -1,5 +1,5 @@
 def do_helm(s):
-	s.send('https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash')
+	s.send('curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash')
 	s.pause_point('helm?')
 
 #def do_helm(s):

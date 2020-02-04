@@ -178,7 +178,7 @@ spec:
 			admission_controller.do_admission_controller_mutating(shutit)
 		elif shutit.cfg[self.module_id]['do_monitoring']:
 			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
-			helm.do_helm(shutit)
+			#helm.do_helm(shutit)
 		shutit.pause_point('''
 
 Build complete. To set up your env, run:
