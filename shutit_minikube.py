@@ -34,7 +34,6 @@ class shutit_minikube(ShutItModule):
 
 	def do_rbac(self, shutit):
 		vm_provider = shutit.cfg[self.module_id]['vm_provider']
-		profile = datetime.datetime.now().strftime('%Y%m%d%s')
 		# Need RBAC
 		shutit.send('minikube start -p ' + profile + ' --vm-driver=' + vm_provider + ' --extra-config=apiserver.authorization-mode=RBAC --memory=4096')
 		shutit.send('kubectl create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default')
@@ -58,7 +57,7 @@ spec:
 	def build(self, shutit):
 		kubernetes_version = shutit.cfg[self.module_id]['kubernetes_version']
 		vm_provider        = shutit.cfg[self.module_id]['vm_provider']
-		profile            = shutit.cfg[self.module_id]['profile']
+		profile = datetime.datetime.now().strftime('%Y%m%d%s')
 		################################################################################
 		# Extract password from 'secret' file (which git ignores).
 		# TODO: check perms are only readable by user
