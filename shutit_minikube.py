@@ -179,6 +179,7 @@ spec:
 		elif shutit.cfg[self.module_id]['do_monitoring']:
 			shutit.send('minikube -p ' + profile + ' start --vm-driver=' + vm_provider)
 			#helm.do_helm(shutit)
+			monitoring.do_monitoring(shutit)
 		shutit.pause_point('''
 
 Build complete. To set up your env, run:
