@@ -1,8 +1,8 @@
 def do_monitoring(s):
-	# Assumes helm is installed and is version 3
+	# Assumes helm is installed and is version 3
 	if s.send_and_get_output('helm version --short')[:2] != 'v3':
-		s.pause_point('helm v3 should be installed')
-	# Doesn't seem to work?
+		s.pause_point('helm v3 should be installed, and is not')
+	# Doesn't seem to work?
 	s.send('cd')
 	s.send('cd git/charts')
 	s.send('helm repo add stable https://kubernetes-charts.storage.googleapis.com/')

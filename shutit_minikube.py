@@ -3,6 +3,7 @@ import logging
 import string
 import os
 import inspect
+import datetime
 from shutit_module import ShutItModule
 from minikube_library import kubewatch
 from minikube_library import kustomize
@@ -33,7 +34,7 @@ class shutit_minikube(ShutItModule):
 
 	def do_rbac(self, shutit):
 		vm_provider = shutit.cfg[self.module_id]['vm_provider']
-		profile = shutit.cfg[self.module_id]['profile']
+		profile = datetime.datetime.now().strftime('%Y%m%d%s')
 		# Need RBAC
 		shutit.send('minikube start -p ' + profile + ' --vm-driver=' + vm_provider + ' --extra-config=apiserver.authorization-mode=RBAC --memory=4096')
 		shutit.send('kubectl create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default')
@@ -229,7 +230,6 @@ Hit CTRL-] to continue to completion.
 		shutit.get_config(self.module_id,'kubernetes_version', default='1.17.0')
 		shutit.get_config(self.module_id,'download', default=False, boolean=True)
 		shutit.get_config(self.module_id,'vm_provider', default='virtualbox')
-		shutit.get_config(self.module_id,'profile', hint='Give this minikube instance a profile name.\nThis cannot easily be changed. eg knative-07-aug')
 		shutit.get_config(self.module_id,'gui',default='true')
 		return True
 

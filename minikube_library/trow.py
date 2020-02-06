@@ -1,14 +1,23 @@
 def do_trow(s, user, pw):
 	s.send('kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=' + user)
-	# TODO: ssh into minikube
 	# Download code
 	s.send('cd')
 	s.send('rm -rf .shutit-minikube-trow-tmp')
 	s.send('mkdir -p .shutit-minikube-trow-tmp')
 	s.send('cd .shutit-minikube-trow-tmp')
 	s.send('git clone https://github.com/ContainerSolutions/trow')
-	s.send('cd trow/quick-install')
-	s.send('./install.sh',{'Do you want to continue':'y','Do you wish to install certs on this host and configure /etc/hosts to allow access from this machine':'y','Do you want to configure Trow as a validation webhook':'y','assword':pw})
+	s.send('cd trow/install')
+	s.send('kubectl apply -f trow.yaml')
+	s.send('kubectl certificate approve trow.kube-public')
+	s.login('minikube ssh -p ' + user)
+	s.login('sudo su -')
+	s.send('git clone https://github.com/ContainerSolutions/trow')
+	s.send('cd trow/install')
+	s.send('./configure-host.sh --add-hosts')
+	s.send('docker pull nginx:alpine')
+	s.send('docker tag nginx:alpine trow.kube-public:31000/test/nginx:alpine')
+	s.send('docker push trow.kube-public:31000/test/nginx:alpine')
+	s.pause_point()
 #	# Get helm
 #	if not s.command_available('helm'):
 #		# https://docs.helm.sh/using_helm/#installing-the-helm-client
