@@ -28,6 +28,6 @@ def do_flux(s, p):
 	s.send('fluxctl list-controllers --all-namespaces',note='List controllers')
 	s.send('fluxctl identity',note='Get the fluxctl public key')
 	s.send('kubectl -n flux logs deployment/flux',note='Check fluxlogs')
-	s.pause_point('add flux shutit key above to github and continue https://github.com/YOURUSER/flux-get-started/settings/keys/new')
+	s.pause_point('add flux shutit key above to github and continue https://github.com/ianmiell/flux-get-started/settings/keys/new')
 	#s.send('kubectl create secret generic flux-git-deploy --from-file /tmp/pubkey -n flux')
 	#s.pause_point('Now add the secret to the flux-deployment.yaml manifest')
